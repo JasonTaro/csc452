@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="Phase_1"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Phase_1">
+				<Option output="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug/Phase_1" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/."/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/p3"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/10.0.1/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 Phase_1"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Phase_1/fast">
+				<Option output="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug/Phase_1" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/."/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/p3"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/10.0.1/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 Phase_1/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/p3/p3stubs.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/p3/p3stubsTest.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1Int.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/phase1a.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_one_context.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/phase1b.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/tests/test_fork.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/phase1c.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/tests/test_p_v.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/phase1d.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/tests/test_device_clock.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/tests/test_join.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/tests/test_sem.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/tests/test_startup.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/ChangeLog">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/Makefile.in">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/README.md">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/config.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/config.h.in">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/config.log">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/config.mk">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/config.mk.in">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/config.status">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/configure">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/configure.ac">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/install-sh">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/Makefile.in">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/disk.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/disk.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/libdisk.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/libdisk3.6.a">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/makedisk">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/makedisk.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk/makedisk.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser/Makefile.in">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser/libuser.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser/libuser.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser/libuser.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser/libuser3.6.a">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/pterm/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/pterm/Makefile.in">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/pterm/pterm">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/pterm/pterm.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/pterm/pterm.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/Makefile.in">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_alarm.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_alarm.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_alarm.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_clock.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_clock.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_clock.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_disk.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_disk.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_disk.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_term.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_term.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/dev_term.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/devices.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/devices.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/devices.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/globals.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/globals.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/globals.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/libusloss3.6.a">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/main.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/main.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/main.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/mmu.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/mmu.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/mmuInt.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/project.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/sig_ints.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/sig_ints.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/sig_ints.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/syscall.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/test.py">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/clock.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/context0.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/context1.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/disk">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/interrupt.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/mmu.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/mmu2.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/mmu3.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/mmu4.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/psr.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/psr1.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/psr2.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/syscall.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/syscall2.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/termread.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/termwrite.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests/termwritebig.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/usloss.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/usyscall.h">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/version.mk">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

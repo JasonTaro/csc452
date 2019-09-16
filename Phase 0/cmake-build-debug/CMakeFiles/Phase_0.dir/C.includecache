@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/kyle/Desktop/CSC 452/Phase 0/phase0.c
+stdio.h
+-
+usloss.h
+/Users/kyle/Desktop/CSC 452/Phase 0/usloss.h
+
+/Users/kyle/Desktop/CSC 452/usloss/src/usloss.h
+stdarg.h
+-
+signal.h
+-
+ucontext.h
+-
+

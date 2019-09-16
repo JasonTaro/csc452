@@ -1,0 +1,123 @@
+cmake_minimum_required(VERSION 3.13)
+project(Phase_1)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(.)
+include_directories(p3)
+include_directories(phase1a)
+include_directories(phase1b)
+include_directories(phase1c)
+include_directories(phase1d)
+include_directories(usloss)
+include_directories(usloss/libdisk)
+include_directories(usloss/libuser)
+include_directories(usloss/src)
+
+add_executable(Phase_1
+        p3/p3stubs.c
+        p3/p3stubsTest.c
+        phase1a/tests/test_one_context.c
+        phase1a/Makefile
+        phase1a/phase1a.c
+        phase1b/tests/test_fork.c
+        phase1b/Makefile
+        phase1b/phase1b.c
+        phase1c/tests/test_p_v.c
+        phase1c/Makefile
+        phase1c/phase1c.c
+        phase1d/tests/test_device_clock.c
+        phase1d/tests/test_join.c
+        phase1d/tests/test_sem.c
+        phase1d/tests/test_startup.c
+        phase1d/Makefile
+        phase1d/phase1d.c
+        usloss/libdisk/disk.c
+        usloss/libdisk/disk.o
+        usloss/libdisk/libdisk.h
+        usloss/libdisk/libdisk3.6.a
+        usloss/libdisk/makedisk
+        usloss/libdisk/makedisk.c
+        usloss/libdisk/makedisk.o
+        usloss/libdisk/Makefile
+        usloss/libdisk/Makefile.in
+        usloss/libuser/libuser.c
+        usloss/libuser/libuser.h
+        usloss/libuser/libuser.o
+        usloss/libuser/libuser3.6.a
+        usloss/libuser/Makefile
+        usloss/libuser/Makefile.in
+        usloss/pterm/Makefile
+        usloss/pterm/Makefile.in
+        usloss/pterm/pterm
+        usloss/pterm/pterm.c
+        usloss/pterm/pterm.o
+        usloss/src/tests/clock.c
+        usloss/src/tests/context0.c
+        usloss/src/tests/context1.c
+        usloss/src/tests/disk
+        usloss/src/tests/interrupt.c
+        usloss/src/tests/mmu.c
+        usloss/src/tests/mmu2.c
+        usloss/src/tests/mmu3.c
+        usloss/src/tests/mmu4.c
+        usloss/src/tests/psr.c
+        usloss/src/tests/psr1.c
+        usloss/src/tests/psr2.c
+        usloss/src/tests/syscall.c
+        usloss/src/tests/syscall2.c
+        usloss/src/tests/termread.c
+        usloss/src/tests/termwrite.c
+        usloss/src/tests/termwritebig.c
+        usloss/src/dev_alarm.c
+        usloss/src/dev_alarm.h
+        usloss/src/dev_alarm.o
+        usloss/src/dev_clock.c
+        usloss/src/dev_clock.h
+        usloss/src/dev_clock.o
+        usloss/src/dev_disk.c
+        usloss/src/dev_disk.h
+        usloss/src/dev_disk.o
+        usloss/src/dev_term.c
+        usloss/src/dev_term.h
+        usloss/src/dev_term.o
+        usloss/src/devices.c
+        usloss/src/devices.h
+        usloss/src/devices.o
+        usloss/src/globals.c
+        usloss/src/globals.h
+        usloss/src/globals.o
+        usloss/src/libusloss3.6.a
+        usloss/src/main.c
+        usloss/src/main.h
+        usloss/src/main.o
+        usloss/src/Makefile
+        usloss/src/Makefile.in
+        usloss/src/mmu.c
+        usloss/src/mmu.o
+        usloss/src/mmuInt.h
+        usloss/src/project.h
+        usloss/src/sig_ints.c
+        usloss/src/sig_ints.h
+        usloss/src/sig_ints.o
+        usloss/src/syscall.h
+        usloss/src/test.py
+        usloss/src/usloss.h
+        usloss/src/usyscall.h
+        usloss/ChangeLog
+        usloss/config.h
+        usloss/config.h.in
+        usloss/config.log
+        usloss/config.mk
+        usloss/config.mk.in
+        usloss/config.status
+        usloss/configure
+        usloss/configure.ac
+        usloss/install-sh
+        usloss/Makefile
+        usloss/Makefile.in
+        usloss/README.md
+        usloss/version.mk
+        Makefile
+        phase1.h
+        phase1Int.h)
