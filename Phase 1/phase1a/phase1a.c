@@ -69,7 +69,6 @@ int P1ContextCreate(void (*func)(void *), void *arg, int stacksize, int *cid) {
 
     *cid = contextID;
 
-
     // find a free context and initialize it
     // allocate the stack, specify the startFunc, etc.
     return P1_SUCCESS;
