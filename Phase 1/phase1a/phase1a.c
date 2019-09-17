@@ -58,12 +58,11 @@ int P1ContextCreate(void (*func)(void *), void *arg, int stacksize, int *cid) {
 
     if (contextID == P1_MAXPROC) { return P1_TOO_MANY_CONTEXTS; }
 
-    Context newContext = contexts[contextID];
-
-    newContext.startFunc = func;
-    newContext.startArg = arg;
-    newContext.stack = malloc(stacksize);
-    USLOSS_ContextInit(&newContext.context, newContext.stack,
+    contexts[contextID].free = 0;
+    contexts[contextID].startFunc = func;
+    contexts[contextID].startArg = arg;
+    contexts[contextID].stack = malloc(stacksize);
+    USLOSS_ContextInit(&contexts[contextID].context, contexts[contextID].stack,
                        stacksize, P3_AllocatePageTable(contextID), (void *)func);
     /* pass launch function instead of (void *)func, with arguments*/
 
@@ -81,7 +80,6 @@ int P1ContextSwitch(int cid) {
         USLOSS_Console("ERROR: Call to P1ContextSwitch from User Mode\n");
         USLOSS_Halt(1);
     }
-
     int result = P1_SUCCESS;
     // switch to the specified context
     if (cid < 0 || cid >= P1_MAXPROC) { return P1_INVALID_CID; }
@@ -91,7 +89,6 @@ int P1ContextSwitch(int cid) {
     currentCid = cid;
 
     USLOSS_ContextSwitch(&contexts[previousCid].context, &contexts[cid].context);
-
     return result;
 }
 
