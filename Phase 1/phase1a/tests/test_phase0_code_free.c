@@ -58,17 +58,19 @@ startup(int argc, char **argv)
     int cid;
     int rc;
 
-    status = USLOSS_PsrSet(USLOSS_PsrGet() & ~USLOSS_PSR_CURRENT_MODE);
-
     P1ContextInit();
     //USLOSS_ContextInit(&context_hello, stack0, sizeof(stack0), NULL, print_hello);
   //  USLOSS_ContextInit(&context_world, stack1, sizeof(stack1), NULL, print_world);
    // USLOSS_ContextSwitch(&context0, &context_hello);
-    rc = P1ContextCreate(print_hello, NULL, SIZE, &cid);
-    assert(rc == P1_SUCCESS);
-    rc = P1ContextCreate(print_world, NULL, SIZE, &cid);
-    assert(rc == P1_SUCCESS);
+    int rcHello = P1ContextCreate(print_hello, NULL, SIZE, &cid);
+    assert(rcHello == P1_SUCCESS);
+    int rcWorld = P1ContextCreate(print_world, NULL, SIZE, &cid);
+    assert(rcWorld == P1_SUCCESS);
     rc = P1ContextSwitch(0);
+
+    P1ContextFree(rcHello);
+    P1ContextFree(rcWorld);
+
     USLOSS_Halt(0);
 
 }

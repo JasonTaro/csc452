@@ -1,0 +1,2 @@
+Assertion failed: (status != USLOSS_ERR_INVALID_PSR), function startup, file tests/test_phase0_code_user.c, line 63.
+psr: 1

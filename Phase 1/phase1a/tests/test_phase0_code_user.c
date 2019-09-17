@@ -57,6 +57,12 @@ startup(int argc, char **argv)
      */
     int cid;
     int rc;
+
+    printf("psr: %d\n", USLOSS_PsrGet());
+    int status = USLOSS_PsrSet(USLOSS_PsrGet() & ~USLOSS_PSR_CURRENT_MODE);
+    assert(status != USLOSS_ERR_INVALID_PSR);
+    printf("psr: %d\n", USLOSS_PsrGet());
+
     P1ContextInit();
     //USLOSS_ContextInit(&context_hello, stack0, sizeof(stack0), NULL, print_hello);
   //  USLOSS_ContextInit(&context_world, stack1, sizeof(stack1), NULL, print_world);

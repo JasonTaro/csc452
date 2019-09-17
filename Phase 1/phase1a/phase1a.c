@@ -1,3 +1,10 @@
+/*
+ * Authors: Jack Mittelmeier, Kyle Snowden
+ *
+ * Basic interrupt functions, process control block implementation, and ability
+ * to create and switch between contexts.
+ */
+
 #include "phase1Int.h"
 #include "usloss.h"
 #include <stdlib.h>
@@ -51,27 +58,34 @@ int P1ContextCreate(void (*func)(void *), void *arg, int stacksize, int *cid) {
         USLOSS_Halt(1);
     }
 
-    if (stacksize < USLOSS_MIN_STACK) { return P1_INVALID_STACK; }
+    P1DisableInterrupts();
 
-    int contextID = 0;
-    while (contexts[contextID].free == 0) { ++contextID; }
+    int result = P1_SUCCESS;
 
-    if (contextID == P1_MAXPROC) { return P1_TOO_MANY_CONTEXTS; }
+    if (stacksize < USLOSS_MIN_STACK) { result = P1_INVALID_STACK; }
+    else {
+        int contextID = 0;
+        while (contexts[contextID].free == 0) { ++contextID; }
 
-    contexts[contextID].free = 0;
-    contexts[contextID].startFunc = func;
-    contexts[contextID].startArg = arg;
-    contexts[contextID].stack = malloc(stacksize);
-    USLOSS_ContextInit(&contexts[contextID].context, contexts[contextID].stack,
-                       stacksize, P3_AllocatePageTable(contextID), (void *)func);
-    /* pass launch function instead of (void *)func, with arguments*/
+        if (contextID == P1_MAXPROC) { result = P1_TOO_MANY_CONTEXTS; }
+        else {
+            contexts[contextID].free = 0;
+            contexts[contextID].startFunc = func;
+            contexts[contextID].startArg = arg;
+            contexts[contextID].stack = malloc(stacksize);
 
+            USLOSS_ContextInit(&contexts[contextID].context, contexts[contextID].stack,
+                               stacksize, P3_AllocatePageTable(contextID), (void *)launch);
 
-    *cid = contextID;
+            *cid = contextID;
+        }
+    }
 
     // find a free context and initialize it
     // allocate the stack, specify the startFunc, etc.
-    return P1_SUCCESS;
+
+    P1EnableInterrupts();
+    return result;
 }
 
 int P1ContextSwitch(int cid) {
@@ -79,15 +93,21 @@ int P1ContextSwitch(int cid) {
         USLOSS_Console("ERROR: Call to P1ContextSwitch from User Mode\n");
         USLOSS_Halt(1);
     }
+
+    P1DisableInterrupts();
+
     int result = P1_SUCCESS;
     // switch to the specified context
-    if (cid < 0 || cid >= P1_MAXPROC) { return P1_INVALID_CID; }
-    if (contexts[cid].free == 1) { return P1_INVALID_CID; }
+    if (cid < 0 || cid >= P1_MAXPROC) { result = P1_INVALID_CID; }
+    else if (contexts[cid].free == 1) { result = P1_INVALID_CID; }
+    else {
+        int previousCid = currentCid;
+        currentCid = cid;
 
-    int previousCid = currentCid;
-    currentCid = cid;
+        USLOSS_ContextSwitch(&contexts[previousCid].context, &contexts[cid].context);
+    }
 
-    USLOSS_ContextSwitch(&contexts[previousCid].context, &contexts[cid].context);
+    P1EnableInterrupts();
     return result;
 }
 
@@ -97,16 +117,21 @@ int P1ContextFree(int cid) {
         USLOSS_Halt(1);
     }
 
+    P1DisableInterrupts();
+
     int result = P1_SUCCESS;
     // switch to the specified context
-    if (cid < 0 || cid >= P1_MAXPROC) { return P1_INVALID_CID; }
-    if (contexts[cid].free == 1) { return P1_INVALID_CID; }
+    if (cid < 0 || cid >= P1_MAXPROC) { result = P1_INVALID_CID; }
+    else if (contexts[cid].free == 1) { result = P1_INVALID_CID; }
+    else {
+        Context currentContext = contexts[cid];
+        free(currentContext.stack);
+        currentContext.free = 1;
 
-    // free the stack and mark the context as unused
-    Context currentContext = contexts[cid];
-    free(currentContext.stack);
-    currentContext.free = 1;
+        P3_FreePageTable(cid);
+    }
 
+    P1EnableInterrupts();
     return result;
 }
 
