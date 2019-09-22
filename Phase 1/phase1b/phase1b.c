@@ -15,6 +15,12 @@ typedef struct PCB {
     char            name[P1_MAXNAME+1]; // process's name
     int             priority;           // process's priority
     P1_State        state;              // state of the PCB
+    int             sid;                // semaphor that the process is blocked on
+    int             parent;             // parent ID
+    int             children[P1_MAXPROC]; // children cid's
+    int             numChildren;        // num of children
+    int             tag;                // process's tag
+    int             cpu;                // cpu consumed in usloss
     // more fields here
 } PCB;
 
@@ -22,9 +28,15 @@ static PCB processTable[P1_MAXPROC];   // the process table
 
 void P1ProcInit(void)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P1ContextInit from User Mode\n");
+        USLOSS_Halt(1);
+    }
     P1ContextInit();
     // initialize everything including the processTable
-
+    for(int pid = 0; pid < P1_MAXPROC; pid++){
+        processTable[pid].state = P1_STATE_FREE;
+    }
 }
 
 int P1_GetPid(void) 
@@ -88,8 +100,36 @@ P1Dispatch(int rotate)
 int
 P1_GetProcInfo(int pid, P1_ProcInfo *info)
 {
-    int         result = P1_SUCCESS;
+    int result = P1_SUCCESS;
+    if(pid < 0 | pid > P1_MAXPROC){
+        printf("Invalid process ID passed to P1_GetProcInfo.\n");
+        return P1_INVALID_PID;
+    }
     // fill in info here
+  //  info->name = processTable[pid].name;
+    info->state = processTable[pid].state;
+    info->sid = processTable[pid].sid;
+    info->priority = processTable[pid].priority;
+    info->tag = processTable[pid].tag;
+    info->cpu = processTable[pid].cpu;
+    info->parent = processTable[pid].parent;
+    //info->children = *processTable[pid].children;
+    info->numChildren = processTable[pid].numChildren;
+    printf("Printing process information for #%d \n", pid);
+    printf("Name:         %s\n", processTable[pid].name);
+    printf("CID:          %d\n", processTable[pid].cid);
+    printf("CPUTime:      %d\n", processTable[pid].cpuTime);
+    printf("Priority:     %d\n", processTable[pid].priority);
+    printf("State:        %d\n", processTable[pid].state);
+    printf("Parent:       %d\n", processTable[pid].parent);
+    printf("NumChildren:  %d\n", processTable[pid].numChildren);
+    printf("Children: ");
+    for(int i = 0; i < P1_MAXPROC; i++){
+        if(processTable[pid].children[i] != 0){
+            printf("%d ", processTable[pid].children[i]);
+        }
+    }
+    printf("\n");
     return result;
 }
 
