@@ -45,6 +45,9 @@ void P1ProcInit(void)
         USLOSS_Console("ERROR: Call to P1ProcInit from User Mode\n");
         USLOSS_Halt(1);
     }
+
+    int interruptsEnabled = P1DisableInterrupts();
+
     P1ContextInit();
     // initialize everything including the processTable
     for(int pid = 0; pid < P1_MAXPROC; pid++){
@@ -52,6 +55,8 @@ void P1ProcInit(void)
     }
 
     //todo create centinal process
+
+    if(interruptsEnabled) { P1EnableInterrupts(); }
 
 }
 
@@ -62,9 +67,7 @@ int P1_GetPid(void)
 
 int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priority, int tag, int *pid ) 
 {
-    int result = P1_SUCCESS;
-    int enable_interrupt_flag;
-    int rc;
+
     // check for kernel mode
     // disable interrupts
     // check all parameters
@@ -73,81 +76,88 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
     // if this is the first process or this process's priority is higher than the 
     //    currently running process call P1Dispatch(FALSE)
     // re-enable interrupts if they were previously enabled
+
+
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
         USLOSS_Console("ERROR: Call to P1_Fork from User Mode\n");
         USLOSS_Halt(1);
     }
-    enable_interrupt_flag = P1DisableInterrupts();
-    if(name == '\0'){
+
+    int interruptsEnabled = P1DisableInterrupts();
+
+    int result = P1_SUCCESS;
+    int rc;
+    if (name == '\0'){
         printf("Null name given to fork.\n");
-        return P1_NAME_IS_NULL;
-    }
-    if(strlen(name) > P1_MAXNAME){
+        result = P1_NAME_IS_NULL;
+    } else if (strlen(name) > P1_MAXNAME){
         printf("Name given to fork is too long.\n");
-        return P1_NAME_TOO_LONG;
-    }
-    if(tag != 1 && tag != 0){
+        result = P1_NAME_TOO_LONG;
+    } else if (tag != 1 && tag != 0){
         printf("Invalid tag given to fork\n");
-        return P1_INVALID_TAG;
-    }
-    if(first_proc == TRUE){
-        if(priority < 0 || priority > 5){
-            printf("Error invalid priority given to fork\n");
-            return P1_INVALID_PRIORITY;
-        }
-    } else {
-        if(priority != 6){
-            printf("Error first process must have priority 6.\n");
-            return P1_INVALID_PRIORITY;
-        }
-    }
-    if(stacksize < USLOSS_MIN_STACK){
+        result = P1_INVALID_TAG;
+    } else if (first_proc == FALSE && (priority < 1 || priority > 5)){
+        printf("Error invalid priority given to fork\n");
+        result = P1_INVALID_PRIORITY;
+    } else if (first_proc == TRUE && priority != 6) {
+        printf("Error first process must have priority 6.\n");
+        result = P1_INVALID_PRIORITY;
+    } else if(stacksize < USLOSS_MIN_STACK) {
         printf("Invalid stack size given to fork\n");
-        return P1_INVALID_STACK;
-    }
-    int free = FALSE;
-    for(int i = 0; i < P1_MAXPROC; i++){
-        if(processTable[i].state == P1_STATE_FREE){
-            if(free == FALSE){
-                *pid = i;
+        result = P1_INVALID_STACK;
+    } else {
+
+        int free = FALSE;
+        for (int i = 0; i < P1_MAXPROC; i++) {
+            if (processTable[i].state == P1_STATE_FREE) {
+                if (free == FALSE) {
+                    *pid = i;
+                }
+                free = TRUE;
+
             }
-            free = TRUE;
-
+            if (strcmp(name, processTable[i].name) == 0) {
+                printf("Duplicate name given to fork.\n");
+                if(interruptsEnabled){ P1EnableInterrupts(); }
+                return P1_DUPLICATE_NAME;
+            }
         }
-        if(strcmp(name, processTable[i].name) == 0){
-            printf("Duplicate name given to fork.\n");
-            return P1_DUPLICATE_NAME;
-        }
-    }
-    if(free == FALSE){
-        printf("Error no free processes\n");
-        return P1_TOO_MANY_PROCESSES;
-    }
-    int cid;
-    rc = P1ContextCreate((void *)springBoard, pid, stacksize, &cid);
-    if(rc != P1_SUCCESS){
-        printf("Error creating context in fork.\n");
-        USLOSS_Halt(1);
-    }
+        if (free == FALSE) {
+            printf("Error no free processes\n");
+            result = P1_TOO_MANY_PROCESSES;
+        } else {
+            int cid;
+            rc = P1ContextCreate((void *) springBoard, pid, stacksize, &cid);
+            if (rc != P1_SUCCESS) {
+                printf("Error creating context in fork.\n");
+                USLOSS_Halt(1);
+            }
 
-    if(first_proc == FALSE){
-        first_proc = TRUE;
-        P1Dispatch(FALSE);
-    } else if(priority < readyQueue[0].priority){
-        P1Dispatch(FALSE);
+            if (first_proc == FALSE) {
+                first_proc = TRUE;
+                P1Dispatch(FALSE);
+            } else if (priority < readyQueue[0].priority) {
+                P1Dispatch(FALSE);
+            }
+        }
+
     }
     
-    if(enable_interrupt_flag){
-        P1EnableInterrupts();
-    }
+    if(interruptsEnabled){ P1EnableInterrupts(); }
     return result;
 }
 
 void 
 P1_Quit(int status) 
 {
-    // check for kernel mode
-    // disable interrupts
+
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P1_Quit from User Mode\n");
+        USLOSS_Halt(1);
+    }
+
+    int interruptsEnabled = P1DisableInterrupts();
+
     // remove from ready queue, set status to P1_STATE_QUIT
     // if first process verify it doesn't have children, otherwise give children to first process
     // add ourself to list of our parent's children that have quit
@@ -155,6 +165,9 @@ P1_Quit(int status)
     P1Dispatch(FALSE);
     // should never get here
     assert(0);
+
+    if(interruptsEnabled){ P1EnableInterrupts(); }
+
 }
 
 
@@ -170,11 +183,15 @@ P1GetChildStatus(int tag, int *cpid, int *status)
 int
 P1SetState(int pid, P1_State state, int sid) 
 {
-    int result = P1_SUCCESS;
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
         USLOSS_Console("ERROR: Call to P1SetState from User Mode\n");
         USLOSS_Halt(1);
     }
+    int interruptsEnabled = P1DisableInterrupts();
+
+
+
+    int result = P1_SUCCESS;
     if(pid < 0 | pid > P1_MAXPROC){
         printf("Invalid pid given to setState.\n");
         return P1_INVALID_PID;
@@ -191,6 +208,9 @@ P1SetState(int pid, P1_State state, int sid)
         processTable[pid].state = state;
 
     }
+
+    if(interruptsEnabled){ P1EnableInterrupts(); }
+
     return result;
     //TODO P1_CHILD_QUIT CHECK
 }
@@ -198,13 +218,24 @@ P1SetState(int pid, P1_State state, int sid)
 void
 P1Dispatch(int rotate)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P1Dispatch from User Mode\n");
+        USLOSS_Halt(1);
+    }
+    int interruptsEnabled = P1DisableInterrupts();
+
     // select the highest-priority runnable process
     // call P1ContextSwitch to switch to that process
+    if(interruptsEnabled){ P1EnableInterrupts(); }
+
 }
 
 int
 P1_GetProcInfo(int pid, P1_ProcInfo *info)
 {
+
+    int interruptsEnabled = P1DisableInterrupts();
+
     int result = P1_SUCCESS;
     if(pid < 0 | pid > P1_MAXPROC){
         printf("Invalid process ID passed to P1_GetProcInfo.\n");
@@ -236,6 +267,9 @@ P1_GetProcInfo(int pid, P1_ProcInfo *info)
         }
     }
     printf("\n");
+
+    if(interruptsEnabled){ P1EnableInterrupts(); }
+
     return result;
 }
 
