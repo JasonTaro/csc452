@@ -29,10 +29,12 @@ typedef struct PCB {
 } PCB;
 
 static PCB processTable[P1_MAXPROC];   // the process table
+PCB readyQueue[P1_MAXPROC];
 int first_proc = FALSE;
 
 void springBoard(int pid){
-    int rc = func(startArgs);
+    assert(processTable[pid].startFunc != NULL);
+    processTable[pid].startFunc(processTable[pid].startArg);
 
 }
 
@@ -48,8 +50,9 @@ void P1ProcInit(void)
     for(int pid = 0; pid < P1_MAXPROC; pid++){
         processTable[pid].state = P1_STATE_FREE;
     }
-    first_proc = TRUE;
+
     //todo create centinal process
+
 }
 
 int P1_GetPid(void) 
@@ -87,14 +90,14 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
         printf("Invalid tag given to fork\n");
         return P1_INVALID_TAG;
     }
-    if(first_proc){
+    if(first_proc == TRUE){
         if(priority < 0 || priority > 5){
             printf("Error invalid priority given to fork\n");
             return P1_INVALID_PRIORITY;
         }
     } else {
-        if(priority < 0 || priority > 6){
-            printf("Error invalid priority given to fork\n");
+        if(priority != 6){
+            printf("Error first process must have priority 6.\n");
             return P1_INVALID_PRIORITY;
         }
     }
@@ -120,9 +123,20 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
         printf("Error no free processes\n");
         return P1_TOO_MANY_PROCESSES;
     }
-   int cid;
-   rc = P1ContextCreate((void *)springBoard, pid, stacksize, &cid);
+    int cid;
+    rc = P1ContextCreate((void *)springBoard, pid, stacksize, &cid);
+    if(rc != P1_SUCCESS){
+        printf("Error creating context in fork.\n");
+        USLOSS_Halt(1);
+    }
 
+    if(first_proc == FALSE){
+        first_proc = TRUE;
+        P1Dispatch(FALSE);
+    } else if(priority < readyQueue[0].priority){
+        P1Dispatch(FALSE);
+    }
+    
     if(enable_interrupt_flag){
         P1EnableInterrupts();
     }
