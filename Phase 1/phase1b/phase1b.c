@@ -21,13 +21,17 @@ typedef struct PCB {
     int             numChildren;        // num of children
     int             tag;                // process's tag
     int             cpu;                // cpu consumed in usloss
+    void            (*startFunc)(void *); //process the function runs
+    void            *startArg;          //arguments
+
+
     // more fields here
 } PCB;
 
 static PCB processTable[P1_MAXPROC];   // the process table
 int first_proc = FALSE;
 
-void springBoard(int (*func)(void*), void *startArgs){
+void springBoard(int pid){
     int rc = func(startArgs);
 
 }
@@ -101,7 +105,11 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
     int free = FALSE;
     for(int i = 0; i < P1_MAXPROC; i++){
         if(processTable[i].state == P1_STATE_FREE){
+            if(free == FALSE){
+                *pid = i;
+            }
             free = TRUE;
+
         }
         if(strcmp(name, processTable[i].name) == 0){
             printf("Duplicate name given to fork.\n");
@@ -112,8 +120,8 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
         printf("Error no free processes\n");
         return P1_TOO_MANY_PROCESSES;
     }
-   // rc = P1ContextCreate((void *)springBoard, func, )
-
+   int cid;
+   rc = P1ContextCreate((void *)springBoard, pid, stacksize, &cid);
 
     if(enable_interrupt_flag){
         P1EnableInterrupts();
@@ -157,7 +165,7 @@ P1SetState(int pid, P1_State state, int sid)
         printf("Invalid pid given to setState.\n");
         return P1_INVALID_PID;
     }
-    if(state != P1_STATE_READY || state != P1_STATE_JOINING || state != P1_STATE_BLOCKED || state != P1_STATE_QUIT){
+    if(state != P1_STATE_READY && state != P1_STATE_JOINING && state != P1_STATE_BLOCKED && state != P1_STATE_QUIT){
         printf("Invalid state given to setState.\n");
         return P1_INVALID_STATE;
     }
@@ -167,6 +175,7 @@ P1SetState(int pid, P1_State state, int sid)
         processTable[pid].sid = sid;
     } else {
         processTable[pid].state = state;
+
     }
     return result;
     //TODO P1_CHILD_QUIT CHECK
