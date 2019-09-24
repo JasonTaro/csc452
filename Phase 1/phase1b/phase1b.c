@@ -11,6 +11,7 @@ Phase 1b
 
 typedef struct PCB {
     int             cid;                // context's ID
+    int             pid;                // process' pid
     int             cpuTime;            // process's running time
     char            name[P1_MAXNAME+1]; // process's name
     int             priority;           // process's priority
@@ -23,6 +24,7 @@ typedef struct PCB {
     int             cpu;                // cpu consumed in usloss
     int             (*startFunc)(void *); //process the function runs
     void            *startArg;          //arguments
+
 
 
     // more fields here
@@ -40,6 +42,65 @@ PCBNode *ready_q_head = NULL;
 int first_proc = FALSE;
 static int currentPID = -1;
 
+
+
+void P1_enQueue(int pid){
+    if(ready_q_head == NULL){
+        ready_q_head = malloc(sizeof(PCBNode));
+        ready_q_head->priority = processTable[pid].priority;
+        ready_q_head->pid = pid;
+        ready_q_head->next = NULL;
+        ready_q_head->process = &processTable[pid];
+        return;
+    }
+    PCBNode *newNode;
+    newNode = malloc(sizeof(PCBNode));
+    newNode->priority = processTable[pid].priority;
+    newNode->pid = pid;
+    newNode->process = &processTable[pid];
+    if(newNode->priority < ready_q_head->priority){
+        newNode->next = ready_q_head;
+        ready_q_head = newNode;
+        return;
+    }
+
+    PCBNode *curNode = ready_q_head->next;
+    PCBNode *prevNode = ready_q_head;
+    while(curNode != NULL){
+        if(newNode->priority < curNode->priority){
+            prevNode->next = newNode;
+            newNode->next = curNode;
+            return;
+        }
+        prevNode = curNode;
+        curNode = curNode->next;
+    }
+    prevNode->next = newNode;
+    return;
+}
+
+PCB* P1_deQueue(int flagged){
+    if(ready_q_head == NULL){
+        return NULL;
+    }
+    if(flagged == TRUE){
+        if(ready_q_head->next != NULL){
+            if(ready_q_head->next->priority == ready_q_head->priority){
+                PCB *aux = ready_q_head->next->process;
+                PCBNode *newNext = ready_q_head->next->next;
+                free(ready_q_head->next);
+                ready_q_head->next = newNext;
+                return aux;
+            }
+        }
+    }
+    PCB *aux = ready_q_head->process;
+    PCBNode *newHead = ready_q_head->next;
+    free(ready_q_head);
+    ready_q_head = newHead;
+    return aux;
+
+}
 
 void springBoard(int pid){
     assert(processTable[pid].startFunc != NULL);
@@ -63,8 +124,6 @@ void P1ProcInit(void)
         processTable[pid].state = P1_STATE_FREE;
     }
 
-    //todo create centinal process
-
     if(interruptsEnabled) { P1EnableInterrupts(); }
 
 }
@@ -76,6 +135,8 @@ int P1_GetPid(void)
 
 int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priority, int tag, int *pid ) 
 {
+
+    //todo forking and quitting should be able to be infinite - test case
 
     // check for kernel mode
     // disable interrupts
@@ -143,7 +204,7 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
                 printf("Error creating context in fork.\n");
                 USLOSS_Halt(1);
             }
-
+            P1SetState(*pid, P1_STATE_READY, 0);
             if (first_proc == FALSE) {
                 first_proc = TRUE;
                 P1Dispatch(FALSE);
@@ -185,9 +246,10 @@ P1_Quit(int status)
 int 
 P1GetChildStatus(int tag, int *cpid, int *status) 
 {
+    //relevant to the currently running process
+    //put child's quit status into status
     int result = P1_SUCCESS;
     // do stuff here
-
     return result;
 }
 
@@ -201,7 +263,7 @@ P1SetState(int pid, P1_State state, int sid)
     int interruptsEnabled = P1DisableInterrupts();
 
 
-
+    //free child in join
     int result = P1_SUCCESS;
     if(pid < 0 | pid > P1_MAXPROC){
         printf("Invalid pid given to setState.\n");
@@ -234,11 +296,19 @@ P1Dispatch(int rotate)
         USLOSS_Halt(1);
     }
     int interruptsEnabled = P1DisableInterrupts();
+    PCB *new_running_process = P1_deQueue(rotate);
+    if(new_running_process == NULL){
+        printf("No runnable processes, halting.\n");
+        USLOSS_Halt(0);
+    }
+    currentPID = new_running_process->pid;
 
     // select the highest-priority runnable process
     // call P1ContextSwitch to switch to that process
 
+
     if(interruptsEnabled){ P1EnableInterrupts(); }
+    P1ContextSwitch(new_running_process->cid);
 
 }
 
@@ -254,7 +324,7 @@ P1_GetProcInfo(int pid, P1_ProcInfo *info)
         return P1_INVALID_PID;
     }
     // fill in info here
-  //  info->name = processTable[pid].name;
+    strcpy(info->name, processTable[pid].name);
     info->state = processTable[pid].state;
     info->sid = processTable[pid].sid;
     info->priority = processTable[pid].priority;
@@ -284,41 +354,6 @@ P1_GetProcInfo(int pid, P1_ProcInfo *info)
 
     return result;
 }
-/*
-void enQueue(pid){
-    PCBNode *newNode;
-    newNode->pid = pid;
-    newNode->priority = processTable[pid].priority;
-    if(ready_q_head == NULL){
-        ready_q_head = newNode;
-        ready_q_head->next = NULL;
-        return;
-    } else{
-        PCBNode *curNode = ready_q_head;
-        PCBNode *prevNode;
-        int priority = processTable[pid].priority;
-        int placed = FALSE;
-        while(curNode->next != NULL){
-            if(priority < curNode->priority){
-                if(curNode == ready_q_head){
-                    prevNode = *ready_q_head;
-                    ready_q_head = &newNode;
-                    ready_q_head->next = &prevNode;
-                    return;
-                } else{
-                    prevNode.next = &newNode;
-                    newNode.next = &curNode;
-                    return;
-                }
-            }
-            curNode = curNode.next;
-        }
-        curNode.next = newNode;
-    }
-}
-
-*/
-
 
 
 
