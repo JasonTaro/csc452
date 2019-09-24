@@ -21,16 +21,25 @@ typedef struct PCB {
     int             numChildren;        // num of children
     int             tag;                // process's tag
     int             cpu;                // cpu consumed in usloss
-    void            (*startFunc)(void *); //process the function runs
+    int             (*startFunc)(void *); //process the function runs
     void            *startArg;          //arguments
 
 
     // more fields here
 } PCB;
 
+typedef struct PCBNode{
+    int pid;
+    struct PCBNode *next;
+    int priority;
+    PCB *process;
+} PCBNode;
+
 static PCB processTable[P1_MAXPROC];   // the process table
-PCB readyQueue[P1_MAXPROC];
+PCBNode *ready_q_head = NULL;
 int first_proc = FALSE;
+static int currentPID = -1;
+
 
 void springBoard(int pid){
     assert(processTable[pid].startFunc != NULL);
@@ -62,7 +71,7 @@ void P1ProcInit(void)
 
 int P1_GetPid(void) 
 {
-    return 0;
+    return currentPID;
 }
 
 int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priority, int tag, int *pid ) 
@@ -127,6 +136,8 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
             result = P1_TOO_MANY_PROCESSES;
         } else {
             int cid;
+            processTable[*pid].startFunc = func;
+            processTable[*pid].startArg = arg;
             rc = P1ContextCreate((void *) springBoard, pid, stacksize, &cid);
             if (rc != P1_SUCCESS) {
                 printf("Error creating context in fork.\n");
@@ -136,7 +147,7 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
             if (first_proc == FALSE) {
                 first_proc = TRUE;
                 P1Dispatch(FALSE);
-            } else if (priority < readyQueue[0].priority) {
+            } else if (priority <  processTable[currentPID].priority) {
                 P1Dispatch(FALSE);
             }
         }
@@ -226,6 +237,7 @@ P1Dispatch(int rotate)
 
     // select the highest-priority runnable process
     // call P1ContextSwitch to switch to that process
+
     if(interruptsEnabled){ P1EnableInterrupts(); }
 
 }
@@ -272,6 +284,40 @@ P1_GetProcInfo(int pid, P1_ProcInfo *info)
 
     return result;
 }
+/*
+void enQueue(pid){
+    PCBNode *newNode;
+    newNode->pid = pid;
+    newNode->priority = processTable[pid].priority;
+    if(ready_q_head == NULL){
+        ready_q_head = newNode;
+        ready_q_head->next = NULL;
+        return;
+    } else{
+        PCBNode *curNode = ready_q_head;
+        PCBNode *prevNode;
+        int priority = processTable[pid].priority;
+        int placed = FALSE;
+        while(curNode->next != NULL){
+            if(priority < curNode->priority){
+                if(curNode == ready_q_head){
+                    prevNode = *ready_q_head;
+                    ready_q_head = &newNode;
+                    ready_q_head->next = &prevNode;
+                    return;
+                } else{
+                    prevNode.next = &newNode;
+                    newNode.next = &curNode;
+                    return;
+                }
+            }
+            curNode = curNode.next;
+        }
+        curNode.next = newNode;
+    }
+}
+
+*/
 
 
 
