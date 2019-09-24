@@ -305,10 +305,10 @@ P1Dispatch(int rotate)
 
     // select the highest-priority runnable process
     // call P1ContextSwitch to switch to that process
-
+    P1ContextSwitch(new_running_process->cid);
 
     if(interruptsEnabled){ P1EnableInterrupts(); }
-    P1ContextSwitch(new_running_process->cid);
+
 
 }
 
