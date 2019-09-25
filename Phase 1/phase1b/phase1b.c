@@ -48,7 +48,6 @@ PCBNode *ready_q_head = NULL;
 int first_proc = TRUE;
 static int currentPID = -1;
 
-
 void P1_enQueueDeadChild (int parentPID, int childPID, int status) {
     deadChild* newChild = malloc(sizeof(deadChild));
     newChild->next = NULL;
@@ -274,8 +273,8 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
                 P1Dispatch(FALSE);
             }
         }
-
     }
+
     if(interruptsEnabled){ P1EnableInterrupts(); }
     return result;
 }
@@ -289,6 +288,7 @@ P1_Quit(int status)
     }
 
     int interruptsEnabled = P1DisableInterrupts();
+
     int pid = P1_GetPid();
 
     processTable[pid].state = P1_STATE_QUIT;
@@ -333,22 +333,49 @@ P1_Quit(int status)
     P1Dispatch(FALSE);
     // should never get here
     assert(0);
-
-
-
 }
 
 
-int 
-P1GetChildStatus(int tag, int *cpid, int *status) 
+int
+P1GetChildStatus(int tag, int *pid, int *status)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P1SetState from User Mode\n");
+        USLOSS_Halt(1);
+    }
+
+    int interruptsEnabled = P1DisableInterrupts();
+
     //relevant to the currently running process
     //put child's quit status into status
     int result = P1_SUCCESS;
+    int currentPID = P1_GetPid();
+
     if(tag != 1 && tag != 0){
+        printf("Invalid tag given to P1GetChildStatus.\n");
         result = P1_INVALID_TAG;
-    } //else if(processTable[pid].murkedKidsQueue)
-    // do stuff here
+    } else if (processTable[currentPID].murkedKidsQueue == NULL) {
+        printf("Call to P1GetChildStatus but no children have quit.\n");
+        result = P1_NO_QUIT;
+    } else {
+        deadChild* current = processTable[currentPID].murkedKidsQueue;
+
+        while (current != NULL && processTable[current->deadChildPID].tag != tag) {
+            current = current->next;
+        }
+
+        if (current == NULL) {
+            printf("Call to P1GetChildStatus but no children have specified tag.\n");
+            result = P1_NO_CHILDREN;
+        } else {
+            *pid = current->deadChildPID;
+            *status = current->exitStatus;
+        }
+
+    }
+
+    if(interruptsEnabled){ P1EnableInterrupts(); }
+
     return result;
 }
 
@@ -391,7 +418,6 @@ P1SetState(int pid, P1_State state, int sid)
 void
 P1Dispatch(int rotate)
 {
-    printf("current PID before hand: %d \n", currentPID);
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
         USLOSS_Console("ERROR: Call to P1Dispatch from User Mode\n");
         USLOSS_Halt(1);
