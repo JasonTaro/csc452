@@ -9,6 +9,8 @@ Phase 1b
 #include <assert.h>
 #include <stdio.h>
 
+struct deadChild typedef deadChild;
+
 typedef struct PCB {
     int             cid;                // context's ID
     int             pid;                // process' pid
@@ -19,6 +21,7 @@ typedef struct PCB {
     int             sid;                // semaphor that the process is blocked on
     int             parent;             // parent ID
     int             children[P1_MAXPROC]; // children cid's
+    deadChild*      murkedKidsQueue;    // murdered children queue
     int             numChildren;        // num of children
     int             tag;                // process's tag
     int             cpu;                // cpu consumed in usloss
@@ -37,11 +40,48 @@ typedef struct PCBNode{
     PCB *process;
 } PCBNode;
 
+
+struct deadChild {
+    int     deadChildPID;
+    deadChild* next;
+};
+
+
+
+
 static PCB processTable[P1_MAXPROC];   // the process table
 PCBNode *ready_q_head = NULL;
 int first_proc = FALSE;
 static int currentPID = -1;
 
+void P1_enQueueDeadChild (int parentPID, int childPID) {
+    deadChild* newChild = malloc(sizeof(deadChild));
+    newChild->next = NULL;
+    newChild->deadChildPID = childPID;
+
+    if (processTable[parentPID].murkedKidsQueue == NULL) {
+        processTable[parentPID].murkedKidsQueue = newChild;
+    } else {
+
+        deadChild* current = processTable[parentPID].murkedKidsQueue;
+
+        while (current->next != NULL) { current = current->next; }
+
+        current->next = newChild;
+    }
+}
+
+int P1_deQueueDeadChild(int parentPID) {
+    if (processTable[parentPID].murkedKidsQueue == NULL) {
+        return NULL;
+    } else {
+        deadChild* head = processTable[parentPID].murkedKidsQueue;
+        int returnValue = head->deadChildPID;
+        processTable[parentPID].murkedKidsQueue = head->next;
+        free(head);
+        return returnValue;
+    }
+}
 
 
 void P1_enQueue(int pid){
@@ -222,23 +262,55 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
 void 
 P1_Quit(int status) 
 {
-
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
         USLOSS_Console("ERROR: Call to P1_Quit from User Mode\n");
         USLOSS_Halt(1);
     }
 
     int interruptsEnabled = P1DisableInterrupts();
+    int pid = P1_GetPid();
+
+    processTable[pid].state = P1_STATE_QUIT;
+
+    for (int indexProcess = 0; indexProcess < P1_MAXPROC; ++indexProcess) {
+
+        // set all child processes' parent to first process
+        if (processTable[indexProcess].parent == pid) { processTable[indexProcess].parent = 0; }
+    }
+
+    int parentPID = processTable[pid].parent;
+
+    // add this process as a dead child to the parent
+    P1_enQueueDeadChild(parentPID, pid);
+
+    for (int indexChildren = 0; indexChildren < P1_MAXPROC; ++indexChildren) {
+        if (processTable[parentPID].children[indexChildren] == pid) {
+
+            // remove this process from its parent's list of current children
+            processTable[parentPID].children[indexChildren] = 0;
+            break;
+        }
+    }
+
+    if (processTable[parentPID].state == P1_STATE_JOINING) {
+        //todo enqueue joining
+        processTable[parentPID].state = P1_STATE_READY;
+    }
+
+    //todo child from ready q
+
 
     // remove from ready queue, set status to P1_STATE_QUIT
     // if first process verify it doesn't have children, otherwise give children to first process
     // add ourself to list of our parent's children that have quit
     // if parent is in state P1_STATE_JOINING set its state to P1_STATE_READY
+    if(interruptsEnabled){ P1EnableInterrupts(); }
+
     P1Dispatch(FALSE);
     // should never get here
     assert(0);
 
-    if(interruptsEnabled){ P1EnableInterrupts(); }
+
 
 }
 
