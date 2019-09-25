@@ -22,11 +22,8 @@ typedef struct PCB {
     int             numChildren;        // num of children
     int             tag;                // process's tag
     int             cpu;                // cpu consumed in usloss
-    int             (*startFunc)(void *); //process the function runs
+    void            (*startFunc)(void *); //process the function runs
     void            *startArg;          //arguments
-
-
-
     // more fields here
 } PCB;
 
@@ -39,7 +36,7 @@ typedef struct PCBNode{
 
 static PCB processTable[P1_MAXPROC];   // the process table
 PCBNode *ready_q_head = NULL;
-int first_proc = FALSE;
+int first_proc = TRUE;
 static int currentPID = -1;
 
 
@@ -51,6 +48,7 @@ void P1_enQueue(int pid){
         ready_q_head->pid = pid;
         ready_q_head->next = NULL;
         ready_q_head->process = &processTable[pid];
+        printf("ready q head pid: %d \n", ready_q_head->pid);
         return;
     }
     PCBNode *newNode;
@@ -80,10 +78,13 @@ void P1_enQueue(int pid){
 }
 
 PCB* P1_deQueue(int flagged){
+
     if(ready_q_head == NULL){
+        printf("here1\n");
         return NULL;
     }
     if(flagged == TRUE){
+        printf("here2\n");
         if(ready_q_head->next != NULL){
             if(ready_q_head->next->priority == ready_q_head->priority){
                 PCB *aux = ready_q_head->next->process;
@@ -94,6 +95,7 @@ PCB* P1_deQueue(int flagged){
             }
         }
     }
+    printf("readyq head in dequeue: %d \n", ready_q_head->pid);
     PCB *aux = ready_q_head->process;
     PCBNode *newHead = ready_q_head->next;
     free(ready_q_head);
@@ -102,9 +104,12 @@ PCB* P1_deQueue(int flagged){
 
 }
 
-void springBoard(int pid){
+static void springBoard(void* args){
+    printf("here we are in springboard\n");
+    int pid = P1_GetPid();
+
     assert(processTable[pid].startFunc != NULL);
-    processTable[pid].startFunc(processTable[pid].startArg);
+    processTable[pid].startFunc(args);
 
 }
 
@@ -133,7 +138,7 @@ int P1_GetPid(void)
     return currentPID;
 }
 
-int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priority, int tag, int *pid ) 
+int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priority, int tag, int *pid )
 {
 
     //todo forking and quitting should be able to be infinite - test case
@@ -196,17 +201,20 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
             printf("Error no free processes\n");
             result = P1_TOO_MANY_PROCESSES;
         } else {
-            int cid;
-            processTable[*pid].startFunc = func;
+
+            processTable[*pid].startFunc = (void *) (*func);
             processTable[*pid].startArg = arg;
-            rc = P1ContextCreate((void *) springBoard, pid, stacksize, &cid);
+            int cid = 0;
+            rc = P1ContextCreate((void *)springBoard, arg, stacksize, &cid);
+
             if (rc != P1_SUCCESS) {
                 printf("Error creating context in fork.\n");
                 USLOSS_Halt(1);
             }
             P1SetState(*pid, P1_STATE_READY, 0);
-            if (first_proc == FALSE) {
-                first_proc = TRUE;
+            P1_enQueue(*pid);
+            if (first_proc == TRUE) {
+                first_proc = FALSE;
                 P1Dispatch(FALSE);
             } else if (priority <  processTable[currentPID].priority) {
                 P1Dispatch(FALSE);
@@ -214,7 +222,6 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
         }
 
     }
-    
     if(interruptsEnabled){ P1EnableInterrupts(); }
     return result;
 }
@@ -291,6 +298,7 @@ P1SetState(int pid, P1_State state, int sid)
 void
 P1Dispatch(int rotate)
 {
+    printf("current PID before hand: %d \n", currentPID);
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
         USLOSS_Console("ERROR: Call to P1Dispatch from User Mode\n");
         USLOSS_Halt(1);
@@ -306,6 +314,7 @@ P1Dispatch(int rotate)
     // select the highest-priority runnable process
     // call P1ContextSwitch to switch to that process
     P1ContextSwitch(new_running_process->cid);
+
 
     if(interruptsEnabled){ P1EnableInterrupts(); }
 
