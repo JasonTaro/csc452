@@ -1,5 +1,7 @@
 /*
 Phase 1b
+
+Jack Mittelmeier, Kyle Snowden
 */
 
 #include "phase1Int.h"
@@ -9,7 +11,11 @@ Phase 1b
 #include <assert.h>
 #include <stdio.h>
 
-struct deadChild typedef deadChild;
+typedef struct deadChild {
+    int     deadChildPID;
+    struct deadChild* next;
+    int exitStatus;
+} deadChild;
 
 typedef struct PCB {
     int             cid;                // context's ID
@@ -27,9 +33,6 @@ typedef struct PCB {
     int             cpu;                // cpu consumed in usloss
     int             (*startFunc)(void *); //process the function runs
     void            *startArg;          //arguments
-
-
-
     // more fields here
 } PCB;
 
@@ -40,25 +43,17 @@ typedef struct PCBNode{
     PCB *process;
 } PCBNode;
 
-
-struct deadChild {
-    int     deadChildPID;
-    deadChild* next;
-};
-
-
-
-
 static PCB processTable[P1_MAXPROC];   // the process table
 PCBNode *ready_q_head = NULL;
-int first_proc = FALSE;
+int first_proc = TRUE;
 static int currentPID = -1;
 
-void P1_enQueueDeadChild (int parentPID, int childPID) {
+
+void P1_enQueueDeadChild (int parentPID, int childPID, int status) {
     deadChild* newChild = malloc(sizeof(deadChild));
     newChild->next = NULL;
     newChild->deadChildPID = childPID;
-
+    newChild->exitStatus = status;
     if (processTable[parentPID].murkedKidsQueue == NULL) {
         processTable[parentPID].murkedKidsQueue = newChild;
     } else {
@@ -73,7 +68,7 @@ void P1_enQueueDeadChild (int parentPID, int childPID) {
 
 int P1_deQueueDeadChild(int parentPID) {
     if (processTable[parentPID].murkedKidsQueue == NULL) {
-        return NULL;
+        return -1;
     } else {
         deadChild* head = processTable[parentPID].murkedKidsQueue;
         int returnValue = head->deadChildPID;
@@ -83,6 +78,24 @@ int P1_deQueueDeadChild(int parentPID) {
     }
 }
 
+void P1_RemoveFromReadyQueue(int pid) {
+    PCBNode* current = ready_q_head;
+
+    if (current == NULL) {
+        return;
+    } else if (current->pid == pid) {
+        ready_q_head = current->next;
+        free(current);
+    } else {
+        while (current->next != NULL && current->next->pid != pid) {
+            current = current->next;
+        }
+        if (current->next == NULL) { return; }
+        PCBNode* toFree = current->next;
+        current->next = current->next->next;
+        free(toFree);
+    }
+}
 
 void P1_enQueue(int pid){
     if(ready_q_head == NULL){
@@ -120,6 +133,7 @@ void P1_enQueue(int pid){
 }
 
 PCB* P1_deQueue(int flagged){
+
     if(ready_q_head == NULL){
         return NULL;
     }
@@ -142,10 +156,11 @@ PCB* P1_deQueue(int flagged){
 
 }
 
-void springBoard(int pid){
+static void springBoard(void* args){
+    int pid = P1_GetPid();
     assert(processTable[pid].startFunc != NULL);
-    processTable[pid].startFunc(processTable[pid].startArg);
-
+    int rc = processTable[pid].startFunc(args);
+    P1_Quit(rc);
 }
 
 
@@ -173,7 +188,7 @@ int P1_GetPid(void)
     return currentPID;
 }
 
-int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priority, int tag, int *pid ) 
+int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priority, int tag, int *pid )
 {
 
     //todo forking and quitting should be able to be infinite - test case
@@ -236,17 +251,24 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
             printf("Error no free processes\n");
             result = P1_TOO_MANY_PROCESSES;
         } else {
-            int cid;
-            processTable[*pid].startFunc = func;
+
+            processTable[*pid].startFunc = (void *) (*func);
             processTable[*pid].startArg = arg;
-            rc = P1ContextCreate((void *) springBoard, pid, stacksize, &cid);
+            int cid = 0;
+            rc = P1ContextCreate((void *)springBoard, arg, stacksize, &cid);
+
             if (rc != P1_SUCCESS) {
                 printf("Error creating context in fork.\n");
                 USLOSS_Halt(1);
             }
-            P1SetState(*pid, P1_STATE_READY, 0);
-            if (first_proc == FALSE) {
-                first_proc = TRUE;
+            rc = P1SetState(*pid, P1_STATE_READY, 0);
+            if(rc != P1_SUCCESS){
+                printf("Unable to set process %d to ready.\n", *pid);
+                USLOSS_Halt(1);
+            }
+            P1_enQueue(*pid);
+            if (first_proc == TRUE) {
+                first_proc = FALSE;
                 P1Dispatch(FALSE);
             } else if (priority <  processTable[currentPID].priority) {
                 P1Dispatch(FALSE);
@@ -254,13 +276,12 @@ int P1_Fork(char *name, int (*func)(void*), void *arg, int stacksize, int priori
         }
 
     }
-    
     if(interruptsEnabled){ P1EnableInterrupts(); }
     return result;
 }
 
-void 
-P1_Quit(int status) 
+void
+P1_Quit(int status)
 {
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
         USLOSS_Console("ERROR: Call to P1_Quit from User Mode\n");
@@ -281,7 +302,7 @@ P1_Quit(int status)
     int parentPID = processTable[pid].parent;
 
     // add this process as a dead child to the parent
-    P1_enQueueDeadChild(parentPID, pid);
+    P1_enQueueDeadChild(parentPID, pid, status);
 
     for (int indexChildren = 0; indexChildren < P1_MAXPROC; ++indexChildren) {
         if (processTable[parentPID].children[indexChildren] == pid) {
@@ -293,12 +314,15 @@ P1_Quit(int status)
     }
 
     if (processTable[parentPID].state == P1_STATE_JOINING) {
-        //todo enqueue joining
-        processTable[parentPID].state = P1_STATE_READY;
+        P1_enQueue(parentPID);
+        int rc = P1SetState(parentPID, P1_STATE_READY, 0);
+        if(rc != P1_SUCCESS){
+            printf("Could not set process %d to ready.\n", parentPID);
+            USLOSS_Halt(1);
+        }
     }
 
-    //todo child from ready q
-
+    P1_RemoveFromReadyQueue(pid);
 
     // remove from ready queue, set status to P1_STATE_QUIT
     // if first process verify it doesn't have children, otherwise give children to first process
@@ -321,6 +345,9 @@ P1GetChildStatus(int tag, int *cpid, int *status)
     //relevant to the currently running process
     //put child's quit status into status
     int result = P1_SUCCESS;
+    if(tag != 1 && tag != 0){
+        result = P1_INVALID_TAG;
+    } //else if(processTable[pid].murkedKidsQueue)
     // do stuff here
     return result;
 }
@@ -337,32 +364,34 @@ P1SetState(int pid, P1_State state, int sid)
 
     //free child in join
     int result = P1_SUCCESS;
-    if(pid < 0 | pid > P1_MAXPROC){
+    if (pid < 0 | pid > P1_MAXPROC){
         printf("Invalid pid given to setState.\n");
-        return P1_INVALID_PID;
-    }
-    if(state != P1_STATE_READY && state != P1_STATE_JOINING && state != P1_STATE_BLOCKED && state != P1_STATE_QUIT){
+        result = P1_INVALID_PID;
+    } else if (state != P1_STATE_READY && state != P1_STATE_JOINING && state != P1_STATE_BLOCKED && state != P1_STATE_QUIT){
         printf("Invalid state given to setState.\n");
-        return P1_INVALID_STATE;
-    }
-
-    if(state == P1_STATE_BLOCKED){
-        processTable[pid].state = P1_STATE_BLOCKED;
-        processTable[pid].sid = sid;
+        result = P1_INVALID_STATE;
     } else {
-        processTable[pid].state = state;
-
+        if (state == P1_STATE_BLOCKED){
+            processTable[pid].state = P1_STATE_BLOCKED;
+            processTable[pid].sid = sid;
+        } else if (state == P1_STATE_JOINING && processTable[pid].murkedKidsQueue != NULL) {
+            printf("Tried to set P1_Joining but process's child has already quit.\n");
+            result = P1_CHILD_QUIT;
+        } else {
+            processTable[pid].state = state;
+        }
     }
+
 
     if(interruptsEnabled){ P1EnableInterrupts(); }
 
     return result;
-    //TODO P1_CHILD_QUIT CHECK
 }
 
 void
 P1Dispatch(int rotate)
 {
+    printf("current PID before hand: %d \n", currentPID);
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
         USLOSS_Console("ERROR: Call to P1Dispatch from User Mode\n");
         USLOSS_Halt(1);
@@ -378,6 +407,7 @@ P1Dispatch(int rotate)
     // select the highest-priority runnable process
     // call P1ContextSwitch to switch to that process
     P1ContextSwitch(new_running_process->cid);
+
 
     if(interruptsEnabled){ P1EnableInterrupts(); }
 
