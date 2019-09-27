@@ -55,13 +55,36 @@ int P1_P(int sid)
 
 int P1_V(int sid) 
 {
-    int result = P1_SUCCESS;
     // check for kernel mode
     // disable interrupts
     // value++
     // if a process is waiting for this semaphore
     //      set the process's state to P1_STATE_READY
     // re-enable interrupts if they were previously enabled
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to semaphor V from user mode.\n");
+        USLOSS_IllegalInstruction();
+        P1_Quit(1024);
+    }
+
+    int result = P1_SUCCESS;
+    if(sid < 0 || sid >= P1_MAXSEM){
+        return P1_INVALID_SID:
+    }
+
+    int prev_enabled = P1DisableInterrupts();
+    sems[sid].value++;
+    for(int i = 0; i < P1_MAXPROC; i++){
+        if(processTable[i].sid == sid){
+            P1SetState(i, P1_STATE_READY, -1);
+            break;
+        }
+    }
+
+    if(prev_enabled){
+        P1EnableInterrupts();
+    }
+
     return result;
 }
 
