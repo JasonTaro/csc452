@@ -143,14 +143,12 @@ int P1_P(int sid) {
     } else {
 
         while(sems[sid].value == 0) {
-            P1SetState(P1_GetPid(), P1_STATE_BLOCKED, sid);
             addBlockedSemaphore(sems[sid], P1_GetPid());
+            P1SetState(P1_GetPid(), P1_STATE_BLOCKED, sid);
+            P1Dispatch(0);
         }
 
         sems[sid].value--;
-
-
-
     }
 
 
@@ -189,7 +187,6 @@ int P1_V(int sid)
         int blockedSemPID = getBlockedSemaphore(sems[sid]);
         if (blockedSemPID != -1) {
             P1SetState(blockedSemPID, P1_STATE_READY, -1);
-            // Call to dispatcher here?
         }
     }
 
