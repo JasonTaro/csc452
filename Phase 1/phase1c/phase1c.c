@@ -23,27 +23,27 @@ typedef struct Sem {
 
 static Sem sems[P1_MAXSEM];
 
-void addBlockedSemaphore(Sem semaphore, int pid) {
+void addBlockedSemaphore(Sem* semaphore, int pid) {
     blocked_queue* newBlocked = malloc(sizeof(blocked_queue));
     newBlocked->next = NULL;
     newBlocked->pid = pid;
 
-    if (semaphore.blocked_queue_head == NULL) {
-        semaphore.blocked_queue_head = newBlocked;
+    if (semaphore->blocked_queue_head == NULL) {
+        semaphore->blocked_queue_head = newBlocked;
     } else {
-        blocked_queue *current = semaphore.blocked_queue_head;
+        blocked_queue *current = semaphore->blocked_queue_head;
         while (current->next != NULL) { current = current->next; }
         current->next = newBlocked;
     }
 }
 
-int getBlockedSemaphore(Sem semaphore) {
-    if (semaphore.blocked_queue_head == NULL) {
+int getBlockedSemaphore(Sem* semaphore) {
+    if (semaphore->blocked_queue_head == NULL) {
         return -1;
     } else {
-        int returnVal = semaphore.blocked_queue_head->pid;
-        blocked_queue *tmp = semaphore.blocked_queue_head;
-        semaphore.blocked_queue_head = semaphore.blocked_queue_head->next;
+        int returnVal = semaphore->blocked_queue_head->pid;
+        blocked_queue *tmp = semaphore->blocked_queue_head;
+        semaphore->blocked_queue_head = semaphore->blocked_queue_head->next;
         free(tmp);
         return returnVal;
     }
@@ -143,7 +143,7 @@ int P1_P(int sid) {
     } else {
 
         while(sems[sid].value == 0) {
-            addBlockedSemaphore(sems[sid], P1_GetPid());
+            addBlockedSemaphore(&sems[sid], P1_GetPid());
             P1SetState(P1_GetPid(), P1_STATE_BLOCKED, sid);
             P1Dispatch(0);
         }
@@ -184,7 +184,7 @@ int P1_V(int sid)
         result = P1_INVALID_SID;
     } else {
         sems[sid].value++;
-        int blockedSemPID = getBlockedSemaphore(sems[sid]);
+        int blockedSemPID = getBlockedSemaphore(&sems[sid]);
         if (blockedSemPID != -1) {
             P1SetState(blockedSemPID, P1_STATE_READY, -1);
         }
