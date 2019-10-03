@@ -45,15 +45,22 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/."/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/p3"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/pterm"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/10.0.1/include"/>
@@ -76,15 +83,22 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/."/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/p3"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/tests"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libdisk"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/libuser"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/pterm"/>
 					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src"/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 1/usloss/src/tests"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/10.0.1/include"/>
@@ -100,10 +114,28 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/CS452_Fall_2019_Phase_1_3.pdf">
+			<Option target="Phase_1"/>
+		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/Makefile">
 			<Option target="Phase_1"/>
 		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug/CMakeCache.txt">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug/Makefile">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug/Phase_1.cbp">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/cmake-build-debug/cmake_install.cmake">
+			<Option target="Phase_1"/>
+		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/p3/p3stubs.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/p3/p3stubs.o">
 			<Option target="Phase_1"/>
 		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/p3/p3stubsTest.c">
@@ -121,16 +153,58 @@
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/phase1a.c">
 			<Option target="Phase_1"/>
 		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/phase1a.d">
+			<Option target="Phase_1"/>
+		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_one_context.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_one_context.d">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_phase0_code.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_phase0_code.d">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_phase0_code_free.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_phase0_code_free.d">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_phase0_code_user.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1a/tests/test_phase0_code_user.d">
 			<Option target="Phase_1"/>
 		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/Makefile">
 			<Option target="Phase_1"/>
 		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/libphase1a-1.0.a">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/libphase1b-1.0.a">
+			<Option target="Phase_1"/>
+		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/phase1b.c">
 			<Option target="Phase_1"/>
 		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/phase1b.d">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/phase1b.o">
+			<Option target="Phase_1"/>
+		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/tests/test_fork.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/tests/test_fork.o">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1b/tests/test_init_info.c">
 			<Option target="Phase_1"/>
 		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/Makefile">
@@ -139,7 +213,16 @@
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/phase1c.c">
 			<Option target="Phase_1"/>
 		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/tests/test_multiple_sems.c">
+			<Option target="Phase_1"/>
+		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/tests/test_p_v.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1c/tests/test_v_p.c">
+			<Option target="Phase_1"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/CMakeLists.txt">
 			<Option target="Phase_1"/>
 		</Unit>
 		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 1/phase1d/Makefile">

@@ -1,35 +1,64 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 project(Phase_1)
 
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
+include_directories(cmake-build-debug)
 include_directories(p3)
 include_directories(phase1a)
+include_directories(phase1a/tests)
 include_directories(phase1b)
+include_directories(phase1b/tests)
 include_directories(phase1c)
+include_directories(phase1c/tests)
 include_directories(phase1d)
+include_directories(phase1d/tests)
 include_directories(usloss)
 include_directories(usloss/libdisk)
 include_directories(usloss/libuser)
+include_directories(usloss/pterm)
 include_directories(usloss/src)
+include_directories(usloss/src/tests)
 
 add_executable(Phase_1
+        cmake-build-debug/cmake_install.cmake
+        cmake-build-debug/CMakeCache.txt
+        cmake-build-debug/Makefile
+        cmake-build-debug/Phase_1.cbp
         p3/p3stubs.c
+        p3/p3stubs.o
         p3/p3stubsTest.c
         phase1a/tests/test_one_context.c
+        phase1a/tests/test_one_context.d
+        phase1a/tests/test_phase0_code.c
+        phase1a/tests/test_phase0_code.d
+        phase1a/tests/test_phase0_code_free.c
+        phase1a/tests/test_phase0_code_free.d
+        phase1a/tests/test_phase0_code_user.c
+        phase1a/tests/test_phase0_code_user.d
         phase1a/Makefile
         phase1a/phase1a.c
+        phase1a/phase1a.d
         phase1b/tests/test_fork.c
+        phase1b/tests/test_fork.o
+        phase1b/tests/test_init_info.c
+        phase1b/libphase1a-1.0.a
+        phase1b/libphase1b-1.0.a
         phase1b/Makefile
         phase1b/phase1b.c
+        phase1b/phase1b.d
+        phase1b/phase1b.o
+        phase1c/tests/test_multiple_sems.c
         phase1c/tests/test_p_v.c
+        phase1c/tests/test_v_p.c
         phase1c/Makefile
         phase1c/phase1c.c
         phase1d/tests/test_device_clock.c
         phase1d/tests/test_join.c
         phase1d/tests/test_sem.c
         phase1d/tests/test_startup.c
+        phase1d/CMakeLists.txt
         phase1d/Makefile
         phase1d/phase1d.c
         usloss/libdisk/disk.c
@@ -118,6 +147,7 @@ add_executable(Phase_1
         usloss/Makefile.in
         usloss/README.md
         usloss/version.mk
+        CS452_Fall_2019_Phase_1_3.pdf
         Makefile
         phase1.h
         phase1Int.h)

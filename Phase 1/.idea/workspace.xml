@@ -5,18 +5,220 @@
       <config projectName="Phase_1" targetName="Phase_1" />
     </generated>
   </component>
-  <component name="CMakeSettings">
+  <component name="CMakeSettings" AUTO_RELOAD="true">
     <configurations>
       <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="159f206e-86af-4b5d-9342-1027eaf0529b" name="Default Changelist" comment="">
+    <list default="true" id="159f206e-86af-4b5d-9342-1027eaf0529b" name="Default Changelist" comment="Updated starter code to new version">
+      <change afterPath="$PROJECT_DIR$/phase1a/phase1a.d" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phase1a/tests/test_one_context.d" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phase1a/tests/test_phase0_code.d" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_free.d" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_user.d" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phase1d/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/config.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/config.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/config.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/config.status" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libdisk/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libdisk/disk.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libdisk/libdisk3.6.a" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libdisk/makedisk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libdisk/makedisk.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libuser/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libuser/libuser.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/libuser/libuser3.6.a" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/pterm/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/pterm/pterm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/pterm/pterm.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/dev_alarm.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/dev_clock.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/dev_disk.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/dev_term.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/devices.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/globals.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/libusloss3.6.a" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/main.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/mmu.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usloss/src/sig_ints.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/DependInfo.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/build.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/cmake_clean.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/flags.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/link.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Phase_1.dir/progress.make" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/phase1b/phase1b.c" beforeDir="false" afterPath="$PROJECT_DIR$/phase1b/phase1b.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Phase_1.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Phase_1.cbp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/p3/p3stubs.o" beforeDir="false" afterPath="$PROJECT_DIR$/p3/p3stubs.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1.h" beforeDir="false" afterPath="$PROJECT_DIR$/phase1.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1Int.h" beforeDir="false" afterPath="$PROJECT_DIR$/phase1Int.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/phase1a/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/libphase1a-1.0.a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/phase1a.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/term0.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/term1.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/term2.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/term3.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/term0.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/term1.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/term2.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/term3.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_one_context" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_one_context.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_one_context.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_one_context.v" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code.v" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_free" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_free.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_free.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_user" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_user.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1a/tests/test_phase0_code_user.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1b/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/phase1b/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1c/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/phase1c/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1c/libphase1c-1.0.a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1c/phase1c.d" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1c/phase1c.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1c/tests/test_p_v.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1d/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/phase1d/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1d/phase1d.c" beforeDir="false" afterPath="$PROJECT_DIR$/phase1d/phase1d.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phase1d/tests/test_join.c" beforeDir="false" afterPath="$PROJECT_DIR$/phase1d/tests/test_join.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/ChangeLog" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/Makefile.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/config.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/config.h.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/config.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/config.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/config.mk.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/config.status" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/configure" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/configure.ac" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/install-sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/Makefile.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/disk.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/disk.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/libdisk.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/libdisk3.6.a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/makedisk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/makedisk.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libdisk/makedisk.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libuser/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libuser/Makefile.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libuser/libuser.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libuser/libuser.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libuser/libuser.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/libuser/libuser3.6.a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/pterm/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/pterm/Makefile.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/pterm/pterm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/pterm/pterm.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/pterm/pterm.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/Makefile.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_alarm.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_alarm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_alarm.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_clock.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_clock.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_clock.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_disk.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_disk.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_disk.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_term.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_term.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/dev_term.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/devices.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/devices.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/devices.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/globals.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/globals.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/globals.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/libusloss3.6.a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/main.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/main.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/main.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/mmu.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/mmu.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/mmuInt.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/project.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/sig_ints.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/sig_ints.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/sig_ints.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/syscall.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/.gdbinit" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/clock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/clock.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/clock.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/context0" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/context0.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/context0.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/context1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/context1.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/context1.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/disk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/interrupt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/interrupt.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/interrupt.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu2.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu2.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu3.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu3.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu4.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/mmu4.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr1.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr1.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr2.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/psr2.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/syscall" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/syscall.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/syscall.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/syscall2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/syscall2.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/syscall2.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termread" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termread.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termread.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termwrite" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termwrite.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termwrite.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termwritebig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termwritebig.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/tests/termwritebig.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/usloss.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/src/usyscall.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/usloss/version.mk" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,18 +230,23 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="CMakeLists.txt" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds">
-    <option name="x" value="176" />
-    <option name="width" value="1502" />
-    <option name="height" value="1050" />
-  </component>
   <component name="ProjectId" id="1RIn5nIfNlNa5jjlZvUyyzVmq0c" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="TODO_SCOPE" value="All Places" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
@@ -82,7 +289,51 @@
       <workItem from="1568563803189" duration="20071000" />
       <workItem from="1569358282436" duration="274000" />
       <workItem from="1569363302147" duration="4515000" />
+      <workItem from="1569733777430" duration="2581000" />
+      <workItem from="1569743425117" duration="4088000" />
+      <workItem from="1569963242666" duration="1000" />
+      <workItem from="1569963247282" duration="1804000" />
+      <workItem from="1570137481732" duration="1240000" />
+      <workItem from="1570139368540" duration="70000" />
+      <workItem from="1570139451010" duration="1049000" />
+      <workItem from="1570140575229" duration="34000" />
     </task>
+    <task id="LOCAL-00001" summary="Finished P1GetChildStatus">
+      <created>1569380822209</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1569380822209</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Wrote body of all functions, without testcases.">
+      <created>1569815554162</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1569815554162</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Wrote body of all functions, without testcases.">
+      <created>1569876594105</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1569876594105</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Fixed dispatcher error">
+      <created>1569878410313</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1569878410313</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Fixed queueing functions to use pointers.">
+      <created>1569964308139</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1569964308139</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -93,10 +344,21 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Finished P1GetChildStatus" />
+    <MESSAGE value="Wrote body of all functions, without testcases." />
+    <MESSAGE value="Fixed dispatcher error" />
+    <MESSAGE value="Fixed queueing functions to use pointers." />
+    <MESSAGE value="Updated starter code to new version" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated starter code to new version" />
   </component>
 </project>

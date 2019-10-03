@@ -27,10 +27,9 @@ VERSION = 1.0
 # Set to version of USLOSS you want to use.
 USLOSS_VERSION = 3.6
 
-# Every C file in this directory is included in the library.
 SRCS = $(wildcard *.c)
 
-# Every C file in the tests subdirectory is a separate test. 
+# Add any tests here. If the test is named test0 then the source file is assumed to be test0.c.
 TESTS = $(patsubst %.c,%,$(wildcard tests/*.c))
 
 # Change this if you want to change the arguments to valgrind.
@@ -40,7 +39,7 @@ VGFLAGS = --track-origins=yes --leak-check=full --max-stackframe=100000
 LIBS = -lusloss$(USLOSS_VERSION) -l$(PHASE)-$(VERSION)
 
 # Change this if you want change which flags are passed to the C compiler.
-CFLAGS += -Wall -g -std=gnu99
+CFLAGS += -Wall -g -std=gnu99 -Werror
 #CFLAGS += -DDEBUG
 
 # You shouldn't need to change anything below here. 
@@ -56,17 +55,19 @@ ifeq ($(shell uname),Darwin)
 else
 	OS = linux
 	CFLAGS += -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -Wno-unused-but-set-variable
+	LDFLAGS += -static
 endif
 
 CC=gcc
 LD=gcc
 AR=ar    
 CFLAGS += $(INCLUDES) $(DEFINES)
-LDFLAGS = -L. -L$(PREFIX)/lib -L$(PREFIX)/cs452/lib
+LDFLAGS = -L. -L$(PREFIX)/cs452/lib -L$(PREFIX)/lib 
 COBJS = ${SRCS:.c=.o}
 DEPS = ${COBJS:.o=.d}
 TSRCS = {$TESTS:=.c}
 TOBJS = ${TESTS:=.o}
+TDEPS = ${TOBJS:.o=.d}
 TOUTS = ${TESTS:=.out}
 TVS = ${TESTS:=.v}
 STUBS = ../p3/p3stubs.o
@@ -109,7 +110,7 @@ $(TESTS):   %: $(TARGET) %.o $(STUBS)
 	$(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(LIBFLAGS)
 
 clean:
-	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests/*.out tests/*.err
+	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TDEPS) $(TVS) *.out tests/*.out tests/*.err
 
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
@@ -122,4 +123,5 @@ valgrind: $(TVS)
 ../p3/p3stubsTest: $(STUBS) ../p3/p3stubsTest.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
--include $(DEPS)
+-include $(DEPS) 
+-include $(TDEPS)

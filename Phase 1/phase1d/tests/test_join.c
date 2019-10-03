@@ -14,12 +14,14 @@ int P2_Startup(void *notused)
     int rc;
     int pids[NUM];
     for (int i = 0; i < 100; i++) {
+        // fork NUM children
         for (int j = 0; j < NUM; j++) {
             char name[P1_MAXNAME+1];
             snprintf(name, sizeof(name), "Child %d", j);
             rc = P1_Fork(name, Child, (void *) j, USLOSS_MIN_STACK, 3, 0, &pids[j]);
             assert(rc == P1_SUCCESS);
         }
+        // join w/ NUM children and make sure the pid and status is valid
         for (int j = 0; j < NUM; j++) {
             int pid;
             rc = P1_Join(0, &pid, &status);
