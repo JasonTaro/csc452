@@ -140,6 +140,8 @@ int P1_P(int sid) {
     int result = P1_SUCCESS;
     if (sid < 0 || sid >= P1_MAXSEM){
         result = P1_INVALID_SID;
+    } else if(sems[sid].free == 1){
+        result = P1_INVALID_SID;
     } else {
 
         while(sems[sid].value == 0) {
@@ -181,6 +183,8 @@ int P1_V(int sid)
 
     int result = P1_SUCCESS;
     if (sid < 0 || sid >= P1_MAXSEM){
+        result = P1_INVALID_SID;
+    } else if(sems[sid].free == 1){
         result = P1_INVALID_SID;
     } else {
         sems[sid].value++;
