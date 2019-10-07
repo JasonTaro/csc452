@@ -40,6 +40,7 @@ startup(int argc, char **argv)
             snprintf(name, P1_MAXNAME+1, "Semaphore: Type: %d, Unit: %d", type, unit);
 
             int rc = P1_SemCreate(name, 0, &device_list[type][unit].wait_semaphore);
+            assert(rc == P1_SUCCESS);
         }
     }
 
@@ -81,12 +82,14 @@ P1_WaitDevice(int type, int unit, int *status)
     int interruptsEnabled = P1DisableInterrupts();
 
     int result = P1_SUCCESS;
+    int retVal;
     if (type < 0 || type >= USLOSS_SYSCALL_INT) {
         result = P1_INVALID_TYPE;
     } else if (unit < 0 || unit >= device_units[type]) {
         result = P1_INVALID_UNIT;
     } else {
-        P1_P(device_list[type][unit].wait_semaphore);
+        retVal = P1_P(device_list[type][unit].wait_semaphore);
+        assert(retVal == P1_SUCCESS);
         if (device_list[type][unit].aborted == 1) {
             result = P1_WAIT_ABORTED;
         } else {
@@ -116,6 +119,7 @@ P1_WakeupDevice(int type, int unit, int status, int abort)
     int interruptsEnabled = P1DisableInterrupts();
 
     int result = P1_SUCCESS;
+    int retVal;
     if (type < 0 || type >= USLOSS_SYSCALL_INT) {
         result = P1_INVALID_TYPE;
     } else if (unit < 0 || unit >= device_units[type]) {
@@ -123,7 +127,8 @@ P1_WakeupDevice(int type, int unit, int status, int abort)
     } else {
         device_list[type][unit].status = status;
         device_list[type][unit].aborted = abort;
-        P1_V(device_list[type][unit].wait_semaphore);
+        retVal = P1_V(device_list[type][unit].wait_semaphore);
+        assert(retVal == P1_SUCCESS);
     }
 
     if (interruptsEnabled) { P1EnableInterrupts(); }
@@ -140,11 +145,18 @@ DeviceHandler(int type, void *arg)
     int status;
     int rc = USLOSS_DeviceInput(type, unit, &status);
     assert (rc == USLOSS_DEV_OK);
+    int retVal;
     if (type == USLOSS_CLOCK_DEV) {
         ++clock_interrupts;
-        if (!(clock_interrupts % 4)) { P1_WakeupDevice(0, 0, 0, 0); }
+        if (!(clock_interrupts % 4)) {
+            retVal = P1_WakeupDevice(0, 0, 0, 0);
+            assert(retVal == P1_SUCCESS);
+        }
         if (!(clock_interrupts % 5)) { P1Dispatch(TRUE); }
-    } else { P1_WakeupDevice(type, unit, status, 0); }
+    } else {
+        retVal = P1_WakeupDevice(type, unit, status, 0);
+        assert(retVal == P1_SUCCESS);
+    }
     // if clock device
     //      P1_WakeupDevice every 4 ticks
     //      P1Dispatch(TRUE) every 5 ticks
@@ -161,7 +173,7 @@ sentinel (void *notused)
     /* start the P2_Startup process */
     rc = P1_Fork("P2_Startup", P2_Startup, NULL, 4 * USLOSS_MIN_STACK, 2 , 0, &pid);
     assert(rc == P1_SUCCESS);
-
+    P1EnableInterrupts();
     // enable interrupts
     // while sentinel has children
     //      get children that have quit via P1GetChildStatus (either tag)
@@ -217,7 +229,9 @@ P1_Join(int tag, int *pid, int *status)
             } else if (rc == P1_SUCCESS) {
                 break;
             } else {
-                P1SetState(P1_GetPid(), P1_STATE_JOINING, NULL);
+                int retVal;
+                retVal = P1SetState(P1_GetPid(), P1_STATE_JOINING, -1);
+                assert(retVal == P1_SUCCESS);
                 P1Dispatch(FALSE);
             }
         }
