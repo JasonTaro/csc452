@@ -157,7 +157,7 @@ sentinel (void *notused)
 {
     int     pid;
     int     rc;
-
+    int status;
     /* start the P2_Startup process */
     rc = P1_Fork("P2_Startup", P2_Startup, NULL, 4 * USLOSS_MIN_STACK, 2 , 0, &pid);
     assert(rc == P1_SUCCESS);
@@ -166,7 +166,22 @@ sentinel (void *notused)
     // while sentinel has children
     //      get children that have quit via P1GetChildStatus (either tag)
     //      wait for an interrupt via USLOSS_WaitInt
+    int quit_child;
+    int rc_0;
+    int rc_1;
+    while(1){
+        rc_0 = P1GetChildStatus(0, &quit_child, &status);
+        if(rc_0 == P1_NO_CHILDREN){
+            break;
+        }
+        rc_1 = P1GetChildStatus(1, &quit_child, &status);
+        if(rc_1 == P1_NO_CHILDREN){
+            break;
+        }
+        USLOSS_WaitInt();
+    }
     USLOSS_Console("Sentinel quitting.\n");
+    P1_Quit(0);
     return 0;
 } /* End of sentinel */
 
