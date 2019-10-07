@@ -51,7 +51,7 @@ startup(int argc, char **argv)
     USLOSS_IntVec[USLOSS_ALARM_INT] = DeviceHandler;
     USLOSS_IntVec[USLOSS_DISK_INT] = DeviceHandler;
     USLOSS_IntVec[USLOSS_TERM_INT] = DeviceHandler;
-//  USLOSS_IntVec[USLOSS_MMU_INT]; I don't know what to do here
+    USLOSS_IntVec[USLOSS_MMU_INT] = DeviceHandler;
     USLOSS_IntVec[USLOSS_SYSCALL_INT] = SyscallHandler;
     USLOSS_IntVec[USLOSS_ILLEGAL_INT] = IllegalInstructionHandler;
 
@@ -178,19 +178,25 @@ sentinel (void *notused)
     // while sentinel has children
     //      get children that have quit via P1GetChildStatus (either tag)
     //      wait for an interrupt via USLOSS_WaitInt
-    int quit_child;
-    int rc_0;
-    int rc_1;
-    while(1){
-        rc_0 = P1GetChildStatus(0, &quit_child, &status);
-        if(rc_0 == P1_NO_CHILDREN){
-            break;
+    int has_children = 1;
+    int child_id;
+    int retVal;
+    while(has_children == 1){
+        has_children = 0;
+        for(int i = 0; i < P1_MAXTAG; i++){
+            while(1){
+                retVal = P1GetChildStatus(i, &child_id, &status);
+                if(retVal == P1_NO_QUIT){
+                    has_children = 1;
+                    break;
+                } else if(retVal == P1_NO_CHILDREN) {
+                    break;
+                }
+            }
         }
-        rc_1 = P1GetChildStatus(1, &quit_child, &status);
-        if(rc_1 == P1_NO_CHILDREN){
-            break;
+        if(has_children == 1){
+            USLOSS_WaitInt();
         }
-        USLOSS_WaitInt();
     }
     USLOSS_Console("Sentinel quitting.\n");
     P1_Quit(0);
@@ -246,6 +252,11 @@ SyscallHandler(int type, void *arg)
 {
     USLOSS_Console("System call %d not implemented.\n", (int) arg);
     USLOSS_IllegalInstruction();
+}
+
+static void IllegalInstructionHandler(int type, void *arg){
+    USLOSS_IllegalInstruction();
+    P1_Quit(1024);
 }
 
 void finish(int argc, char **argv) {}
