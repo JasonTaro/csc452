@@ -94,6 +94,26 @@ P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
 int 
 P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priority, int *pid) 
 {
+    if(stackSize < USLOSS_MIN_STACK){
+        return P1_INVALID_STACK;
+    }
+
+    if(priority > 5 || priority < 1){
+        return P1_INVALID_PRIORITY;
+    }
+
+    for(int i = 0; i <  P1_MAXPROC; i++){
+        //check if we have an open process
+    }
+
+    int rc;
+    rc = P1_Fork(name, func, arg, stackSize, priority, 1, pid); //tag = 1: for user level
+    if(rc != P1_SUCCESS){
+        USLOSS_Console("Invalid process given to spawn.");
+        USLOSS_Halt(1);
+    }
+
+
     return P1_SUCCESS;
 }
 
