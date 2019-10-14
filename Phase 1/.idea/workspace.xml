@@ -13,6 +13,7 @@
   <component name="ChangeListManager">
     <list default="true" id="159f206e-86af-4b5d-9342-1027eaf0529b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Phase 2/phase2a/phase2a.c" beforeDir="false" afterPath="$PROJECT_DIR$/../Phase 2/phase2a/phase2a.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,6 +25,9 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FavoritesManager">
+    <favorites_list name="Phase_1" />
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -93,6 +97,7 @@
       <workItem from="1570140575229" duration="8661000" />
       <workItem from="1570401324455" duration="832000" />
       <workItem from="1570742285360" duration="503000" />
+      <workItem from="1571013286377" duration="4172000" />
     </task>
     <task id="LOCAL-00001" summary="Finished P1GetChildStatus">
       <created>1569380822209</created>
