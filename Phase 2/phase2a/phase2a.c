@@ -12,8 +12,7 @@
 #define TAG_KERNEL 0
 #define TAG_USER 1
 
-void (*USLOSS_SyscallVec[USLOSS_MAX_SYSCALLS])(int dev, void *arg) = { NULL };
-
+void (*USLOSS_SyscallVec[USLOSS_MAX_SYSCALLS])(void *arg) = { NULL };
 
 static void SpawnStub(USLOSS_Sysargs *sysargs);
 static void WaitStub(USLOSS_Sysargs *sysargs);
@@ -56,29 +55,15 @@ static void
 SyscallHandler(int type, void *arg)
 //SyscallHandler(int type, USLOSS_Sysargs *arg)
 {
-//    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
-//
-//
-//        // JACK IS THIS HOW THIS WORKS? I DON'T KNOW
-//        int pid = P1_GetPid();
-//        P1_ProcInfo currentInfo;
-//        int rc = P1_GetProcInfo(pid, &currentInfo);
-//        assert(rc == P1_SUCCESS);
-//        if (currentInfo.tag == TAG_KERNEL) {
-//            USLOSS_Console("ERROR: Call to SyscallHandler from user mode in kernel-level process.\n");
-//            USLOSS_IllegalInstruction();
-//            P1_Quit(1024);
-//        } else {
-//            USLOSS_Console("ERROR: Call to SyscallHandler from user mode in user-level process.\n");
-//            P2_Terminate(2048);
-//        }
-//    }
-
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to SyscallHandler from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
 
     if (USLOSS_SyscallVec[((USLOSS_Sysargs*) arg)->number] == NULL) {
         ((USLOSS_Sysargs*) arg)->arg4 = (void*) P2_INVALID_SYSCALL;
     } else {
-        USLOSS_SyscallVec[((USLOSS_Sysargs*) arg)->number](0, arg);
+        USLOSS_SyscallVec[((USLOSS_Sysargs*) arg)->number](arg);
     }
 
 }
@@ -136,8 +121,7 @@ P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
         return P2_INVALID_SYSCALL;
     }
 
-    // JACK I'M ALSO CONFUSED HERE
-    USLOSS_SyscallVec[number] = handler;
+    USLOSS_SyscallVec[number] = (void *) handler;
 
     return P1_SUCCESS;
 }
@@ -223,7 +207,7 @@ WaitStub(USLOSS_Sysargs *sysargs)
     int pid = (int) sysargs->arg1;
     int status;
 
-    int rc = P2_Wait(pid, &status);
+    int rc = P2_Wait(&pid, &status);
     sysargs->arg4 = (void *) rc;
 }
 
