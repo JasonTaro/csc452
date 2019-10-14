@@ -155,6 +155,9 @@ P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
  *
  * Spawn a user-level process.
  *
+ * This function creats a struct that contains the function and argument parameters passed to it.
+ * Then calls a springboard function that accesses that struct to call the desired function with
+ * the arguments given, after switching to user mode.
  */
 int 
 P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priority, int *pid) 
@@ -256,10 +259,12 @@ WaitStub(USLOSS_Sysargs *sysargs)
         USLOSS_IllegalInstruction();
     }
 
-    int pid = (int) sysargs->arg1;
-    int status;
 
+    int status;
+    int pid;
     int rc = P2_Wait(&pid, &status);
+    sysargs->arg1 = (void *) pid;
+    sysargs->arg2 = (void *) status;
     sysargs->arg4 = (void *) rc;
 }
 
@@ -376,7 +381,7 @@ GetTimeOfDay (USLOSS_Sysargs *sysargs)
 
     int status;
     int rc = USLOSS_DeviceInput(USLOSS_CLOCK_DEV, 0, &status);
-    assert(rc = USLOSS_DEV_OK);
+    assert(rc == USLOSS_DEV_OK);
 
     sysargs->arg1 = (void *) status;
 }
