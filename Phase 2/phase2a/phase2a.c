@@ -22,6 +22,19 @@ static void GetPid (USLOSS_Sysargs *sysargs);
 static void GetTimeOfDay (USLOSS_Sysargs *sysargs);
 void SwitchToUser();
 
+typedef struct springBoardArg {
+    int(*func)(void *arg);
+    void *arg;
+} springBoardArg;
+
+int launcher(void *arg){
+    SwitchToUser();
+    springBoardArg *s_arg = arg;
+    int status = s_arg->func(s_arg->arg);
+    free(s_arg);
+    Sys_Terminate(status);
+    return 0;
+}
 /*
  * IllegalHandler
  *
@@ -160,7 +173,11 @@ P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priori
     }
 
     int rc;
-    rc = P1_Fork(name, func, arg, stackSize, priority, 1, pid); //tag = 1: for user level
+
+    springBoardArg *s_arg = malloc(sizeof(springBoardArg));
+    s_arg->func = func;
+    s_arg->arg = arg;
+    rc = P1_Fork(name, launcher, (void *) s_arg, stackSize, priority, 1, pid); //tag = 1: for user level
 
     if(rc == P1_TOO_MANY_PROCESSES){
         return rc;
@@ -174,6 +191,7 @@ P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priori
 
     return P1_SUCCESS;
 }
+
 
 /*
  * SpawnStub
@@ -217,8 +235,10 @@ P2_Wait(int *pid, int *status)
         USLOSS_Console("ERROR: Call to P2_Wait from user mode.\n");
         USLOSS_IllegalInstruction();
     }
+    int rc;
+    rc = P1_Join(1, pid, status);
 
-    return P1_SUCCESS;
+    return rc;
 }
 
 /*
@@ -258,6 +278,7 @@ P2_Terminate(int status)
         USLOSS_IllegalInstruction();
     }
 
+    P1_Quit(status);
 
 }
 
