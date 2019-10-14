@@ -20,6 +20,7 @@ static void TerminateStub(USLOSS_Sysargs *sysargs);
 static void GetProcInfoStub(USLOSS_Sysargs *sysargs);
 static void GetPid (USLOSS_Sysargs *sysargs);
 static void GetTimeOfDay (USLOSS_Sysargs *sysargs);
+void SwitchToUser();
 
 /*
  * IllegalHandler
@@ -79,6 +80,11 @@ SyscallHandler(int type, void *arg)
 void
 P2ProcInit(void) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2ProcInit from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc;
 
     USLOSS_IntVec[USLOSS_ILLEGAL_INT] = IllegalHandler;
@@ -117,6 +123,11 @@ P2ProcInit(void)
 int
 P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_SetSyscallHandler from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     if (number < 0 || number >= USLOSS_MAX_SYSCALLS) {
         return P2_INVALID_SYSCALL;
     }
@@ -135,6 +146,11 @@ P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
 int 
 P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priority, int *pid) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_Spawn from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     if(stackSize < USLOSS_MIN_STACK){
         return P1_INVALID_STACK;
     }
@@ -144,6 +160,7 @@ P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priori
     }
 
     int rc;
+    SwitchToUser();
     rc = P1_Fork(name, func, arg, stackSize, priority, 1, pid); //tag = 1: for user level
 
     if(rc == P1_TOO_MANY_PROCESSES){
@@ -169,6 +186,11 @@ P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priori
 static void
 SpawnStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to SpawnStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int (*func)(void *) = sysargs->arg1;
     void *arg = sysargs->arg2;
     int stackSize = (int) sysargs->arg3;
@@ -192,6 +214,11 @@ SpawnStub(USLOSS_Sysargs *sysargs)
 int 
 P2_Wait(int *pid, int *status) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_Wait from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     return P1_SUCCESS;
 }
 
@@ -205,6 +232,11 @@ P2_Wait(int *pid, int *status)
 static void
 WaitStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to WaitStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int pid = (int) sysargs->arg1;
     int status;
 
@@ -222,6 +254,11 @@ WaitStub(USLOSS_Sysargs *sysargs)
 void 
 P2_Terminate(int status) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_Terminate from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
 
 }
 
@@ -235,6 +272,12 @@ P2_Terminate(int status)
 static void
 TerminateStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to TerminateStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
+
     int terminationCode = (int) sysargs->arg1;
     P2_Terminate(terminationCode);
 }
@@ -248,6 +291,11 @@ TerminateStub(USLOSS_Sysargs *sysargs)
 
 int
 GetProcInfo(int pid, P1_ProcInfo *info) {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to GetProcInfo from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     return P1_GetProcInfo(pid, info);
 }
 
@@ -260,6 +308,11 @@ GetProcInfo(int pid, P1_ProcInfo *info) {
 
 static void
 GetProcInfoStub(USLOSS_Sysargs *sysargs) {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to GetProcInfoStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int pid = (int) sysargs->arg1;
     P1_ProcInfo *info = sysargs->arg2;
 
@@ -278,6 +331,11 @@ GetProcInfoStub(USLOSS_Sysargs *sysargs) {
 static void
 GetPid (USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to GetPid from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     sysargs->arg1 = (void *) P1_GetPid();
 }
 
@@ -291,6 +349,11 @@ GetPid (USLOSS_Sysargs *sysargs)
 static void
 GetTimeOfDay (USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to GetTimeOfDay from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int status;
     int rc = USLOSS_DeviceInput(USLOSS_CLOCK_DEV, 0, &status);
     assert(rc = USLOSS_DEV_OK);
@@ -300,6 +363,20 @@ GetTimeOfDay (USLOSS_Sysargs *sysargs)
 
 
 
+void
+SwitchToUser()
+{
+    unsigned int psr = USLOSS_PsrGet();
 
+    if ((psr & (unsigned int) 0x1) != 0) { psr = psr &  ~((unsigned int) 0x4); }
+    else { psr = psr | (unsigned int) 0x4; }
+
+    psr = psr &  ~((unsigned int) 0x1);
+
+    // set the interrupt bit in the PSR
+    int status;
+    status = USLOSS_PsrSet(psr);
+    assert (status == USLOSS_ERR_OK);
+}
 
 
