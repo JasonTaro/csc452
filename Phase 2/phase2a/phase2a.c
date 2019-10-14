@@ -160,7 +160,6 @@ P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priori
     }
 
     int rc;
-    SwitchToUser();
     rc = P1_Fork(name, func, arg, stackSize, priority, 1, pid); //tag = 1: for user level
 
     if(rc == P1_TOO_MANY_PROCESSES){
