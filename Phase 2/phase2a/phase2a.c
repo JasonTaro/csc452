@@ -22,13 +22,13 @@ static void GetPid (USLOSS_Sysargs *sysargs);
 static void GetTimeOfDay (USLOSS_Sysargs *sysargs);
 void SwitchToUser();
 
+/* Stores the function and arguments passed to spawn*/
 typedef struct springBoardArg {
     int(*func)(void *arg);
     void *arg;
 } springBoardArg;
 
 int launcher(void *arg){
-    //do we need a semaphore here??????
     SwitchToUser();
     springBoardArg *s_arg = arg;
     int status = s_arg->func(s_arg->arg);
@@ -156,7 +156,7 @@ P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
  *
  * Spawn a user-level process.
  *
- * This function creats a struct that contains the function and argument parameters passed to it.
+ * This function creates a struct that contains the function and argument parameters passed to it.
  * Then calls a springboard function that accesses that struct to call the desired function with
  * the arguments given, after switching to user mode.
  */
