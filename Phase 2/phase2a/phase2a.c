@@ -28,6 +28,7 @@ typedef struct springBoardArg {
 } springBoardArg;
 
 int launcher(void *arg){
+    //do we need a semaphore here??????
     SwitchToUser();
     springBoardArg *s_arg = arg;
     int status = s_arg->func(s_arg->arg);
@@ -187,8 +188,8 @@ P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priori
     }
 
     if(rc != P1_SUCCESS){
-        USLOSS_Console("Invalid process given to spawn.");
-        USLOSS_Halt(1);
+        USLOSS_Console("Invalid process given to spawn. \n");
+        return rc;
     }
 
 
