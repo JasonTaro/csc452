@@ -78,7 +78,7 @@ int Child(void *arg) {
     TEST(pid, childPid);
     char *randomletter = &"ABCDEFGHIJKLMNOPQRSTUVWXYZ"[random () % 26];
     printf("in child %d, spawning child %s \n", (int) arg, randomletter);
-    rc = s(randomletter, Child_2, arg, USLOSS_MIN_STACK, 4, &child2Pid);
+    rc = (randomletter, Child_2, arg, USLOSS_MIN_STACK, 4, &child2Pid);
     return (int) arg;
 }
 
