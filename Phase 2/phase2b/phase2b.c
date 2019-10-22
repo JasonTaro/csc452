@@ -12,24 +12,34 @@
 static int      ClockDriver(void *);
 static void     SleepStub(USLOSS_Sysargs *sysargs);
 
+// User made functions
+int AddSleepingProcess(int pid, int waitingTime);
+int GetSleepingProcess() __attribute__((warn_unused_result));
+int getCurrentTime();
+#define NO_PROCESS_SLEEPING -1
+
+
 /*
  * P2ClockInit
  *
  * Initialize the clock data structures and fork the clock driver.
  */
-void 
-P2ClockInit(void) 
+void
+P2ClockInit(void)
 {
     int rc;
 
     P2ProcInit();
 
     // initialize data structures here
+    // JACK I made it a queue so we don't have have to initialize it.... maybe....
 
     rc = P2_SetSyscallHandler(SYS_SLEEP, SleepStub);
     assert(rc == P1_SUCCESS);
 
-    // fork the clock driver here
+    int pid;
+    rc = P1_Fork("Clock Driver", ClockDriver, NULL, 4*USLOSS_MIN_STACK, 2, 0, &pid);
+    assert(rc == P1_SUCCESS);
 }
 
 /*
@@ -38,10 +48,11 @@ P2ClockInit(void)
  * Clean up the clock data structures and stop the clock driver.
  */
 
-void 
-P2ClockShutdown(void) 
+void
+P2ClockShutdown(void)
 {
-    // stop clock driver
+    int rc = P1_WakeupDevice(0, 0, 0, TRUE);
+    assert(rc == P1_SUCCESS);
 }
 
 /*
@@ -49,10 +60,9 @@ P2ClockShutdown(void)
  *
  * Kernel process that manages the clock device and wakes sleeping processes.
  */
-static int 
-ClockDriver(void *arg) 
+static int
+ClockDriver(void *arg)
 {
-
     while(1) {
         int rc;
         int now;
@@ -65,6 +75,13 @@ ClockDriver(void *arg)
         assert(rc == P1_SUCCESS);
 
         // wakeup any sleeping processes whose wakeup time has arrived
+        int blockedSemID;
+        while((blockedSemID = GetSleepingProcess()) != NO_PROCESS_SLEEPING) {
+            rc = P1_V(blockedSemID);
+            assert(rc == P1_SUCCESS);
+        };
+
+
     }
     return P1_SUCCESS;
 }
@@ -74,11 +91,18 @@ ClockDriver(void *arg)
  *
  * Causes the current process to sleep for the specified number of seconds.
  */
-int 
-P2_Sleep(int seconds) 
+int
+P2_Sleep(int seconds)
 {
+    int rc;
     // add current process to data structure of sleepers
+    int semID = AddSleepingProcess(P1_GetPid(), getCurrentTime() + (seconds * 1000));
     // wait until sleep is complete
+    rc = P1_P(semID);
+    assert(rc == P1_SUCCESS);
+
+    rc = P1_SemFree(semID);
+    assert(rc == P1_SUCCESS);
     return P1_SUCCESS;
 }
 
@@ -87,11 +111,78 @@ P2_Sleep(int seconds)
  *
  * Stub for the Sys_Sleep system call.
  */
-static void 
-SleepStub(USLOSS_Sysargs *sysargs) 
+static void
+SleepStub(USLOSS_Sysargs *sysargs)
 {
     int seconds = (int) sysargs->arg1;
     int rc = P2_Sleep(seconds);
     sysargs->arg4 = (void *) rc;
 }
 
+
+// Simple helper function which grabs the current time
+
+int getCurrentTime() {
+    int currentTime;
+    int rc = USLOSS_DeviceInput(USLOSS_CLOCK_DEV, 0, &currentTime);
+    assert(rc == USLOSS_DEV_OK);
+    return currentTime;
+}
+
+// QUEUEUEUEUEUEUEUEUEUEUEUEUEU
+
+struct SleepNode {
+    int pid;
+    int waitingTime;
+    struct SleepNode* next;
+    int semID;
+} typedef SleepNode;
+
+SleepNode* SleepQueueHead;
+char meaninglessName = (char) 33;
+
+// Adds a sleeping process to the queue, in increasing order of wakeup time.
+// Return the id of the semaphore the process will be blocked on
+int AddSleepingProcess(int pid, int waitingTime) {
+    SleepNode* newNode = (SleepNode*) malloc(sizeof(SleepNode));
+    newNode->pid = pid;
+    newNode->waitingTime = waitingTime;
+    newNode->next = NULL;
+    int rc = P1_SemCreate((&meaninglessName), 0, &newNode->semID);
+    meaninglessName++;
+    assert(rc == P1_SUCCESS);
+
+    if (SleepQueueHead == NULL) {
+        SleepQueueHead = newNode;
+    } else {
+        SleepNode* current = SleepQueueHead;
+        while (current->next != NULL && waitingTime > current->next->waitingTime) {
+            current = current->next;
+        }
+
+        if (current->next == NULL) {
+            // adding to end of queue
+            current->next = newNode;
+        } else {
+            // adding into sorted location in queue
+            newNode->next = current->next;
+            current->next = newNode;
+        }
+    }
+    return newNode->semID;
+}
+
+// Checks whether any process should be woken up
+// If so, returns the semID a sleeping process is blocked on
+// Otherwise, returns NO_PROCESS_SLEEPING
+int GetSleepingProcess() {
+    if (SleepQueueHead == NULL || SleepQueueHead->waitingTime > getCurrentTime()) {
+        return NO_PROCESS_SLEEPING;
+    } else {
+        int blockedSem = SleepQueueHead->semID;
+        SleepNode* tmp = SleepQueueHead;
+        SleepQueueHead = SleepQueueHead->next;
+        free(tmp);
+        return blockedSem;
+    }
+}
