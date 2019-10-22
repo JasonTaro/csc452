@@ -96,7 +96,7 @@ P2_Sleep(int seconds)
 {
     int rc;
     // add current process to data structure of sleepers
-    int semID = AddSleepingProcess(P1_GetPid(), getCurrentTime() + (seconds * 1000));
+    int semID = AddSleepingProcess(P1_GetPid(), getCurrentTime() + (seconds * 1000000));
     // wait until sleep is complete
     rc = P1_P(semID);
     assert(rc == P1_SUCCESS);
