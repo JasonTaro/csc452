@@ -27,6 +27,11 @@ int getCurrentTime();
 void
 P2ClockInit(void)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2ClockInit from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc;
 
     P2ProcInit();
@@ -51,6 +56,11 @@ P2ClockInit(void)
 void
 P2ClockShutdown(void)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2ClockShutdown from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc = P1_WakeupDevice(0, 0, 0, TRUE);
     assert(rc == P1_SUCCESS);
 }
@@ -63,6 +73,11 @@ P2ClockShutdown(void)
 static int
 ClockDriver(void *arg)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to ClockDriver from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     while(1) {
         int rc;
         int now;
@@ -94,6 +109,11 @@ ClockDriver(void *arg)
 int
 P2_Sleep(int seconds)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_Sleep from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc;
     // add current process to data structure of sleepers
     int semID = AddSleepingProcess(P1_GetPid(), getCurrentTime() + (seconds * 1000000));
@@ -114,6 +134,11 @@ P2_Sleep(int seconds)
 static void
 SleepStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to SleepStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int seconds = (int) sysargs->arg1;
     int rc = P2_Sleep(seconds);
     sysargs->arg4 = (void *) rc;
