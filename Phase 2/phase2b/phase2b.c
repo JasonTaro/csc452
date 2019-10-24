@@ -115,15 +115,22 @@ P2_Sleep(int seconds)
     }
 
     int rc;
-    // add current process to data structure of sleepers
-    int semID = AddSleepingProcess(P1_GetPid(), getCurrentTime() + (seconds * 1000000));
-    // wait until sleep is complete
-    rc = P1_P(semID);
-    assert(rc == P1_SUCCESS);
 
-    rc = P1_SemFree(semID);
-    assert(rc == P1_SUCCESS);
-    return P1_SUCCESS;
+    if (seconds < 0) {
+        return P2_INVALID_SECONDS;
+    } else if (seconds == 0) {
+        return P1_SUCCESS;
+    } else {
+        // add current process to data structure of sleepers
+        int semID = AddSleepingProcess(P1_GetPid(), getCurrentTime() + (seconds * 1000000));
+        // wait until sleep is complete
+        rc = P1_P(semID);
+        assert(rc == P1_SUCCESS);
+
+        rc = P1_SemFree(semID);
+        assert(rc == P1_SUCCESS);
+        return P1_SUCCESS;
+    }
 }
 
 /*
