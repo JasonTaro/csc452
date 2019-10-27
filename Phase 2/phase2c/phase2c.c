@@ -110,7 +110,7 @@ DiskDriver(void *arg)
     // Jack! I made our data structures an array so that the parameter is the disk number
 
     while (TRUE) {
-        P1_P(DiskInfoArray[disk].waitingRequest_SemID);
+        rc = P1_P(DiskInfoArray[disk].waitingRequest_SemID);
         if (DiskInfoArray[disk].operation == ABORT) { break; }
 
         if (DiskInfoArray[disk].operation == USLOSS_DISK_TRACKS) {
@@ -120,7 +120,7 @@ DiskDriver(void *arg)
             rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
         }
 
-        if
+
 
 
         switch (DiskInfoArray[disk].operation) {
@@ -133,7 +133,7 @@ DiskDriver(void *arg)
 
         }
 
-        P1_P(DiskInfoArray[disk].waitingRequest_SemID);
+        rc = P1_P(DiskInfoArray[disk].waitingRequest_SemID);
 
 
 
@@ -163,11 +163,46 @@ int DiskReadWriteHelper(int unit, int track, int first, int sectors, void *buffe
 
     if (unit < 0 || unit >= USLOSS_DISK_UNITS) {
         return P1_INVALID_UNIT;
-    } else if () {
-
+    } else if (sectors <= 0 || sectors > DiskInfoArray[unit].sectors) {
+        return P2_INVALID_SECTORS;
+    } else if(!buffer){
+        return P2_NULL_ADDRESS;
+    } else if(track < DiskInfoArray[unit].startingTrack || track > DiskInfoArray[unit].startingTrack + *DiskInfoArray[unit].tracks){
+        return P2_INVALID_TRACK;
+    } else if(first < 1 || first > 16){
+        return P2_INVALID_FIRST;
     }
 
 
+    int current_track = track;
+    int rc;
+
+    rc = P1_P(DiskInfoArray[unit].mutex_SemID); //i think?
+    assert(rc == P1_SUCCESS);
+
+    USLOSS_DeviceRequest *request = malloc(sizeof(USLOSS_DeviceRequest));
+    while(sectors > 0){
+        request->opr = operation;
+        request->reg1 = (void *)current_track; //how do we offset it by the first sector?
+        request->reg2 = buffer;
+
+        rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
+
+        if(rc != USLOSS_DEV_OK){
+            free(request);
+            rc = P1_V(DiskInfoArray[unit].mutex_SemID);
+            assert(rc == P1_SUCCESS);
+            return P1_INVALID_UNIT;
+        }
+
+        sectors = sectors - 16;
+        current_track++;
+    }
+    free(request);
+    rc = P1_V(DiskInfoArray[unit].mutex_SemID);
+    assert(rc == P1_SUCCESS);
+
+    return P1_SUCCESS;
 
 
 //    } else if (sector == NULL || track == NULL || disk == NULL) {
@@ -186,7 +221,6 @@ int DiskReadWriteHelper(int unit, int track, int first, int sectors, void *buffe
 //        rc = P1_P(DiskInfoArray[unit].requestCompleted_SemID); assert(rc == P1_SUCCESS);
 //
 //
-//        rc = P1_V(DiskInfoArray[unit].mutex_SemID); assert(rc == P1_SUCCESS);
 //
 //        return P1_SUCCESS;
 //    }
