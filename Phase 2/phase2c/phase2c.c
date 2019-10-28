@@ -109,6 +109,8 @@ DiskDriver(void *arg)
     USLOSS_DeviceRequest request;
     // Jack! I made our data structures an array so that the parameter is the disk number
 
+    //p semaphore that is being read / written to
+    //v it when it is done
     while (TRUE) {
         rc = P1_P(DiskInfoArray[disk].waitingRequest_SemID);
         if (DiskInfoArray[disk].operation == ABORT) { break; }
@@ -163,67 +165,77 @@ int DiskReadWriteHelper(int unit, int track, int first, int sectors, void *buffe
 
     if (unit < 0 || unit >= USLOSS_DISK_UNITS) {
         return P1_INVALID_UNIT;
-    } else if (sectors <= 0 || sectors > DiskInfoArray[unit].sectors) {
+    } else if (sectors < 0 || sectors > DiskInfoArray[unit].sectors) {
         return P2_INVALID_SECTORS;
     } else if(!buffer){
         return P2_NULL_ADDRESS;
-    } else if(track < DiskInfoArray[unit].startingTrack || track > DiskInfoArray[unit].startingTrack + *DiskInfoArray[unit].tracks){
-        return P2_INVALID_TRACK;
     } else if(first < 1 || first > 16){
         return P2_INVALID_FIRST;
+    } else if(track < 0){
+        return P2_INVALID_TRACK;
     }
 
-
-    int current_track = track;
     int rc;
+    int current_track = track;
+    int current_sector = first;
 
-    rc = P1_P(DiskInfoArray[unit].mutex_SemID); //i think?
-    assert(rc == P1_SUCCESS);
-
+    //track has 16 sectors, if we go above 16 then seek to the next track
+    //use track operation to see how many tracks there are to determine if there is an error
+    //increase buffer address by 512 each sector
+    //if we try and read too many sectors then return invalid sectors
     USLOSS_DeviceRequest *request = malloc(sizeof(USLOSS_DeviceRequest));
-    while(sectors > 0){
-        request->opr = operation;
-        request->reg1 = (void *)current_track; //how do we offset it by the first sector?
-        request->reg2 = buffer;
+
+    int *num_tracks;
+
+    request->opr = USLOSS_DISK_TRACKS;
+    request->reg1 = &num_tracks;
+
+    rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
+    assert(rc == USLOSS_DEV_OK);
+
+    request->opr = USLOSS_DISK_SEEK;
+    request->reg1 = (void *)track;
+    rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
+    assert(rc == USLOSS_DEV_OK);
+
+    request->opr = operation;
+    request->reg1 = (void *)first;
+    request->reg2 = buffer;
+    for(int i = 0; i < sectors; i++){
+        if(current_sector % 16 == 0){ //if the current_sector is a multiple of 16 - move to the next track
+            current_track++;
+            if(current_track > *num_tracks){
+                free(request);
+                return P2_INVALID_TRACK;
+            }
+            request->opr = USLOSS_DISK_SEEK;
+            request->reg1 = (void *) current_track;
+            rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
+            assert(rc == USLOSS_DEV_OK);
+
+            request->opr = operation;
+            request->reg1 = (void *)current_sector;
+        }
 
         rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
 
         if(rc != USLOSS_DEV_OK){
             free(request);
-            rc = P1_V(DiskInfoArray[unit].mutex_SemID);
             assert(rc == P1_SUCCESS);
             return P1_INVALID_UNIT;
         }
 
-        sectors = sectors - 16;
-        current_track++;
+        current_sector++;
+        request->reg1 = (void *)current_sector;
+        request->reg2 = &buffer + 512;
+
+
     }
     free(request);
-    rc = P1_V(DiskInfoArray[unit].mutex_SemID);
     assert(rc == P1_SUCCESS);
 
     return P1_SUCCESS;
 
-
-//    } else if (sector == NULL || track == NULL || disk == NULL) {
-//        return P2_NULL_ADDRESS;
-//    } else {
-//        *sector = 512;
-//        *track = 16;
-//
-//        int rc;
-//        rc = P1_P(DiskInfoArray[unit].mutex_SemID); assert(rc == P1_SUCCESS);
-//
-//        DiskInfoArray[unit].operation = USLOSS_DISK_TRACKS;
-//        DiskInfoArray[unit].tracks = disk;
-//
-//        rc = P1_V(DiskInfoArray[unit].waitingRequest_SemID); assert(rc == P1_SUCCESS);
-//        rc = P1_P(DiskInfoArray[unit].requestCompleted_SemID); assert(rc == P1_SUCCESS);
-//
-//
-//
-//        return P1_SUCCESS;
-//    }
 }
 
 /*
