@@ -14,21 +14,25 @@ static void     DiskReadStub(USLOSS_Sysargs *sysargs);
 static void     DiskWriteStub(USLOSS_Sysargs *sysargs);
 static void     DiskSizeStub(USLOSS_Sysargs *sysargs);
 
-#define     ABORT   -1
+#define     ABORT       -1
+#define     NUM_SECTORS 16
+#define     NUM_BYTES   512
 
 struct DiskInfo {
     int disk;
-    int mutex_SemID; // initialized to 1
-    int waitingRequest_SemID; // initialized to 0
-    int requestCompleted_SemID; // initialized to 0;
-//    int tracks;
+    int mutex_SemID;                // initialized to 1
+    int waitingRequest_SemID;       // initialized to 0
+    int requestCompleted_SemID;     // initialized to 0
 
+    // used to keep track of disk's size
+    int numTracks;
+
+    // used to pass values between helper and disk driver
     int operation;
     int startingTrack;
     int startingSector;
     int sectors;
-    void** buffer;
-    int* tracks;
+    void* buffer;
     int status;
 } typedef DiskInfo;
 
@@ -43,6 +47,7 @@ void
 P2DiskInit(void) 
 {
     int rc;
+    int status;
 
     // initialize data structures here
 
@@ -61,24 +66,30 @@ P2DiskInit(void)
     for (int disk = 0; disk < USLOSS_DISK_UNITS; disk++) {
         int pid;
         char processesName[20];
-        snprintf(processesName, 16, "Disk Driver %d", disk);
-        rc = P1_Fork(processesName, DiskDriver, (void*) disk, 4*USLOSS_MIN_STACK, 2, 0, &pid);
+        snprintf(processesName, 20, "Disk Driver %d", disk);
+        rc = P1_Fork(processesName, DiskDriver, (void *)(uintptr_t) disk, 4*USLOSS_MIN_STACK, 2, 0, &pid);
         assert(rc == P1_SUCCESS);
 
         char mutexName[20];
-        snprintf(mutexName, 16, "Mutex Semaphore %d", disk);
+        snprintf(mutexName, 20, "Mutex Semaphore %d", disk);
         rc = P1_SemCreate(mutexName, 1, &DiskInfoArray[disk].mutex_SemID);
         assert(rc == P1_SUCCESS);
 
         char requestSemName[24];
-        snprintf(requestSemName, 16, "Request Semaphore %d", disk);
+        snprintf(requestSemName, 24, "Request Semaphore %d", disk);
         rc = P1_SemCreate(requestSemName, 0, &DiskInfoArray[disk].waitingRequest_SemID);
         assert(rc == P1_SUCCESS);
 
         char completedSemName[24];
-        snprintf(completedSemName, 16, "Completed Semaphore %d", disk);
+        snprintf(completedSemName, 24, "Completed Semaphore %d", disk);
         rc = P1_SemCreate(completedSemName, 0, &DiskInfoArray[disk].requestCompleted_SemID);
         assert(rc == P1_SUCCESS);
+
+        USLOSS_DeviceRequest request;
+        request.opr = USLOSS_DISK_TRACKS;
+        request.reg1 = &DiskInfoArray[disk].numTracks;
+        rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request); assert(rc == USLOSS_DEV_OK);
+        rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
     }
 }
 
@@ -91,7 +102,18 @@ P2DiskInit(void)
 void 
 P2DiskShutdown(void) 
 {
+    int rc;
+    for (int disk = 0; disk < USLOSS_DISK_UNITS; disk++) {
+        rc = P1_P(DiskInfoArray[disk].mutex_SemID); assert(rc == P1_SUCCESS);
 
+        DiskInfoArray[disk].operation = ABORT;
+
+        rc = P1_V(DiskInfoArray[disk].waitingRequest_SemID); assert(rc == P1_SUCCESS);
+
+        rc = P1_SemFree(DiskInfoArray[disk].waitingRequest_SemID); assert(rc == P1_SUCCESS);
+        rc = P1_SemFree(DiskInfoArray[disk].requestCompleted_SemID); assert(rc == P1_SUCCESS);
+        rc = P1_SemFree(DiskInfoArray[disk].mutex_SemID); assert(rc == P1_SUCCESS);
+    }
 }
 
 /*
@@ -101,55 +123,7 @@ P2DiskShutdown(void)
  * Note that it may require several disk operations to service a single I/O request.
  */
 static int 
-DiskDriver(void *arg) 
-{
-    int disk = (int) arg;
-    int rc;
-    int status;
-    USLOSS_DeviceRequest request;
-    // Jack! I made our data structures an array so that the parameter is the disk number
-
-    //p semaphore that is being read / written to
-    //v it when it is done
-    while (TRUE) {
-        rc = P1_P(DiskInfoArray[disk].waitingRequest_SemID);
-        if (DiskInfoArray[disk].operation == ABORT) { break; }
-
-        if (DiskInfoArray[disk].operation == USLOSS_DISK_TRACKS) {
-            request.opr = USLOSS_DISK_TRACKS;
-            request.reg1 = DiskInfoArray[disk].tracks;
-            DiskInfoArray[disk].status = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request);
-            rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
-        }
-
-
-
-
-        switch (DiskInfoArray[disk].operation) {
-
-            case USLOSS_DISK_TRACKS:
-
-
-            default:
-                continue;
-
-        }
-
-        rc = P1_P(DiskInfoArray[disk].waitingRequest_SemID);
-
-
-
-//    typedef struct USLOSS_DeviceRequest
-//    {
-//        int opr; USLOSS_DISK_READ, USLOSS_DISK_WRITE, USLOSS_DISK_SEEK, USLOSS_DISK_TRACKS
-//        void *reg1;
-//        void *reg2;
-//    } USLOSS_DeviceRequest;
-    }
-
-
-
-
+DiskDriver(void *arg) {
     // repeat
     //   wait for next request
     //   while request isn't complete
@@ -158,84 +132,107 @@ DiskDriver(void *arg)
     //          handle errors
     //   update the request status and wake the waiting process
     // until P2DiskShutdown has been called
+
+    int disk = (int) arg;
+    int rc;
+    int currentTrack;
+    int currentSector;
+    void *buffer;
+    USLOSS_DeviceRequest request;
+
+    //p semaphore that is being read / written to
+    //v it when it is done
+    while (TRUE) {
+        rc = P1_P(DiskInfoArray[disk].waitingRequest_SemID);
+        assert(rc == P1_SUCCESS);
+
+        if (DiskInfoArray[disk].operation == ABORT) {
+            break;
+        } else {
+//            DiskInfoArray[disk];
+            currentTrack = DiskInfoArray[disk].startingTrack;
+            currentSector = DiskInfoArray[disk].startingSector;
+            buffer = DiskInfoArray[disk].buffer;
+
+            // Move head to correct track;
+            request.opr = USLOSS_DISK_SEEK;
+            request.reg1 = (void *)(uintptr_t) DiskInfoArray[disk].startingTrack;
+            rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request);
+            assert(rc == USLOSS_DEV_OK);
+
+            for (int i = 0; i < DiskInfoArray[disk].sectors; i++) {
+                if (currentSector % NUM_SECTORS == 0) { //if the current_sector is a multiple of 16 - move to the next track
+                    currentTrack++;
+//                    if(currentTrack > DiskInfoArray[disk].numTracks){
+//                        DiskInfoArray[disk].status = P2_INVALID_TRACK;
+//                        goto end_of_operation;
+//                    } I think I successfully moved this error check to the helper function
+
+                    request.opr = USLOSS_DISK_SEEK;
+                    request.reg1 = (void *)(uintptr_t) currentTrack;
+                    rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request);
+                    assert(rc == USLOSS_DEV_OK);
+                }
+
+                // Fill out request struct for read or write
+                request.opr = DiskInfoArray[disk].operation;
+                request.reg1 = (void *)(uintptr_t) currentSector;
+                request.reg2 = buffer;
+                buffer += NUM_BYTES;
+
+                rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request);
+                assert(rc == USLOSS_DEV_OK);
+
+//                if(rc != USLOSS_DEV_OK){
+//                    free(request);
+//                    assert(rc == P1_SUCCESS);
+//                    return P1_INVALID_UNIT;
+//                } I think I successfully moved this error check to the helper function
+
+                currentSector++;
+//                request.reg1 = (void *) currentSector;
+//                request.reg2 = &(buffer) + 512;
+            }
+        }
+        rc = P1_V(DiskInfoArray[disk].requestCompleted_SemID);
+        assert(rc == P1_SUCCESS);
+    }
     return P1_SUCCESS;
 }
 
-int DiskReadWriteHelper(int unit, int track, int first, int sectors, void *buffer, int operation)  {
+int
+DiskReadWriteHelper(int unit, int track, int first, int sectors, void *buffer, int operation)
+{
+    int rc;
 
     if (unit < 0 || unit >= USLOSS_DISK_UNITS) {
         return P1_INVALID_UNIT;
-    } else if (sectors < 0 || sectors > DiskInfoArray[unit].sectors) {
+    } else if (sectors <= 0 || ((track * NUM_SECTORS) + first + sectors) > (NUM_SECTORS * DiskInfoArray[unit].numTracks)) {
         return P2_INVALID_SECTORS;
     } else if(!buffer){
         return P2_NULL_ADDRESS;
-    } else if(first < 1 || first > 16){
+//    } else if(first < 1 || first > 16){
+    } else if(first < 0 || first >= NUM_SECTORS){
         return P2_INVALID_FIRST;
-    } else if(track < 0){
+    } else if(track < 0 || track >= DiskInfoArray[unit].numTracks){
         return P2_INVALID_TRACK;
+    } else {
+        rc = P1_P(DiskInfoArray[unit].mutex_SemID); assert(rc == P1_SUCCESS);
+
+        DiskInfoArray[unit].operation = operation;
+        DiskInfoArray[unit].startingSector = first;
+        DiskInfoArray[unit].startingTrack = track;
+        DiskInfoArray[unit].sectors = sectors;
+        DiskInfoArray[unit].buffer = buffer;
+        DiskInfoArray[unit].operation = operation;
+
+        rc = P1_V(DiskInfoArray[unit].waitingRequest_SemID); assert(rc == P1_SUCCESS);
+        rc = P1_P(DiskInfoArray[unit].requestCompleted_SemID); assert(rc == P1_SUCCESS);
+
+        rc = P1_V(DiskInfoArray[unit].mutex_SemID); assert(rc == P1_SUCCESS);
+
+        return P1_SUCCESS;
     }
-
-    int rc;
-    int current_track = track;
-    int current_sector = first;
-
-    //track has 16 sectors, if we go above 16 then seek to the next track
-    //use track operation to see how many tracks there are to determine if there is an error
-    //increase buffer address by 512 each sector
-    //if we try and read too many sectors then return invalid sectors
-    USLOSS_DeviceRequest *request = malloc(sizeof(USLOSS_DeviceRequest));
-
-    int *num_tracks;
-
-    request->opr = USLOSS_DISK_TRACKS;
-    request->reg1 = &num_tracks;
-
-    rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
-    assert(rc == USLOSS_DEV_OK);
-
-    request->opr = USLOSS_DISK_SEEK;
-    request->reg1 = (void *)track;
-    rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
-    assert(rc == USLOSS_DEV_OK);
-
-    request->opr = operation;
-    request->reg1 = (void *)first;
-    request->reg2 = buffer;
-    for(int i = 0; i < sectors; i++){
-        if(current_sector % 16 == 0){ //if the current_sector is a multiple of 16 - move to the next track
-            current_track++;
-            if(current_track > *num_tracks){
-                free(request);
-                return P2_INVALID_TRACK;
-            }
-            request->opr = USLOSS_DISK_SEEK;
-            request->reg1 = (void *) current_track;
-            rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
-            assert(rc == USLOSS_DEV_OK);
-
-            request->opr = operation;
-            request->reg1 = (void *)current_sector;
-        }
-
-        rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, unit, request);
-
-        if(rc != USLOSS_DEV_OK){
-            free(request);
-            assert(rc == P1_SUCCESS);
-            return P1_INVALID_UNIT;
-        }
-
-        current_sector++;
-        request->reg1 = (void *)current_sector;
-        request->reg2 = &buffer + 512;
-
-
-    }
-    free(request);
-    assert(rc == P1_SUCCESS);
-
-    return P1_SUCCESS;
-
 }
 
 /*
@@ -271,7 +268,7 @@ DiskReadStub(USLOSS_Sysargs *sysargs)
     rc = P2_DiskRead(unit, firstTrack, firstSector, sectors, buffer);
 
     // put result in sysargs
-    sysargs->arg4 = (void *) rc;
+    sysargs->arg4 = (void *)(uintptr_t) rc;
 }
 
 
@@ -293,7 +290,7 @@ DiskWriteStub(USLOSS_Sysargs *sysargs)
     int rc;
     rc = P2_DiskWrite(unit, firstTrack, firstSector, sectors, buffer);
 
-    sysargs->arg4 = (void *) rc;
+    sysargs->arg4 = (void *)(uintptr_t) rc;
 }
 
 
@@ -305,21 +302,9 @@ P2_DiskSize(int unit, int *sector, int *track, int *disk)
     } else if (sector == NULL || track == NULL || disk == NULL) {
         return P2_NULL_ADDRESS;
     } else {
-        *sector = 512;
-        *track = 16;
-
-        int rc;
-        rc = P1_P(DiskInfoArray[unit].mutex_SemID); assert(rc == P1_SUCCESS);
-
-        DiskInfoArray[unit].operation = USLOSS_DISK_TRACKS;
-        DiskInfoArray[unit].tracks = disk;
-
-        rc = P1_V(DiskInfoArray[unit].waitingRequest_SemID); assert(rc == P1_SUCCESS);
-        rc = P1_P(DiskInfoArray[unit].requestCompleted_SemID); assert(rc == P1_SUCCESS);
-
-
-        rc = P1_V(DiskInfoArray[unit].mutex_SemID); assert(rc == P1_SUCCESS);
-
+        *sector = NUM_BYTES;
+        *track = NUM_SECTORS;
+        *disk = DiskInfoArray[unit].numTracks;
         return P1_SUCCESS;
     }
 }
@@ -333,8 +318,8 @@ DiskSizeStub(USLOSS_Sysargs *sysargs)
     int rc;
     rc = P2_DiskSize(unit, &bytesInSector, &sectorsInTrack, &tracksInDisk);
 
-    sysargs->arg1 = (void *) bytesInSector;
-    sysargs->arg2 = (void *) sectorsInTrack;
-    sysargs->arg3 = (void *) tracksInDisk;
-    sysargs->arg4 = (void *) rc;
+    sysargs->arg1 = (void *)(uintptr_t) bytesInSector;
+    sysargs->arg2 = (void *)(uintptr_t) sectorsInTrack;
+    sysargs->arg3 = (void *)(uintptr_t) tracksInDisk;
+    sysargs->arg4 = (void *)(uintptr_t) rc;
 }
