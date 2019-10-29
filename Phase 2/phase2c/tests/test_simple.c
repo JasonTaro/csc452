@@ -20,23 +20,39 @@ static int passed = FALSE;
 
 #define MSG "This is a test."
 
+#define MSG_TWO "Prepared is me marianne pleasure likewise debating. Wonder an unable except better stairs do ye admire. His and eat secure sex called esteem praise. So moreover as speedily differed branched ignorant. Tall are her knew poor now does then. Procured to contempt oh he raptures amounted occasion. One boy assure income spirit lovers set. Ye to misery wisdom plenty polite to as. Prepared interest proposal it he exercise. My wishing an in attempt ferrars. Visited eat you why service looking engaged. At place no walls hopes rooms fully in. Roof hope shy tore leaf joy paid boy. Noisier out brought entered detract because sitting sir. Fat put occasion rendered off humanity has. Old there any widow law rooms. Agreed but expect repair she nay sir silent person. Direction can dependent one bed situation attempted. His she are man their spite avoid. Her pretended fulfilled extremely education yet. Satisfied did one admitting incommode tolerably how are."
+
 int P3_Startup(void *arg) {
-    char buffer[USLOSS_DISK_SECTOR_SIZE];
-    strncpy(buffer, MSG, sizeof(buffer));
+    char buffer[USLOSS_DISK_SECTOR_SIZE * 2];
+    strncpy(buffer, MSG_TWO, sizeof(buffer));
 
     USLOSS_Console("Write to the disk.\n");
-    int rc = Sys_DiskWrite(buffer, 0, 0, 1, 0);
+    int rc = Sys_DiskWrite(buffer, 0, 0, 2, 0);
     USLOSS_Console("Verify that the disk write was successful.\n");
     assert(rc == P1_SUCCESS);
     USLOSS_Console("Wrote \"%s\".\n", buffer);
 
+//    USLOSS_Console("Write to the disk.\n");
+//    rc = Sys_DiskWrite(buffer, 3, 0, 2, 0);
+//    USLOSS_Console("Verify that the disk write was successful.\n");
+//    assert(rc == P1_SUCCESS);
+//    USLOSS_Console("Wrote \"%s\".\n", buffer);
+
     bzero(buffer, sizeof(buffer));
     USLOSS_Console("Read from the disk.\n");
-    rc = Sys_DiskRead(buffer, 0, 0, 1, 0);
+    rc = Sys_DiskRead(buffer, 0, 0, 2, 0);
     USLOSS_Console("Verify that the disk read was successful.\n");
     assert(rc == P1_SUCCESS);
-    TEST(strcmp(MSG, buffer), 0);
+    TEST(strcmp(MSG_TWO, buffer), 0);
     USLOSS_Console("Read \"%s\".\n", buffer);
+
+//    bzero(buffer, sizeof(buffer));
+//    USLOSS_Console("Read from the disk.\n");
+//    rc = Sys_DiskRead(buffer, 3, 0, 2, 0);
+//    USLOSS_Console("Verify that the disk read was successful.\n");
+//    assert(rc == P1_SUCCESS);
+//    TEST(strcmp(MSG_TWO, buffer), 0);
+//    USLOSS_Console("Read \"%s\".\n", buffer);
     return 11;
 }
 int P2_Startup(void *arg)
@@ -63,11 +79,12 @@ void test_setup(int argc, char **argv) {
     int rc;
 
     rc = Disk_Create(NULL, 0, 10);
+    rc = Disk_Create(NULL, 1, 10);
     assert(rc == 0);
 }
 
 void test_cleanup(int argc, char **argv) {
-    DeleteAllDisks();
+//    DeleteAllDisks();
     if (passed) {
         USLOSS_Console("TEST PASSED.\n");
     }

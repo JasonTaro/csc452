@@ -65,29 +65,30 @@ P2DiskInit(void)
     // fork the disk drivers here
     for (int disk = 0; disk < USLOSS_DISK_UNITS; disk++) {
         int pid;
-        char processesName[20];
-        snprintf(processesName, 20, "Disk Driver %d", disk);
+        char processesName[32];
+        snprintf(processesName, 32, "Disk Driver %d", disk);
         rc = P1_Fork(processesName, DiskDriver, (void *)(uintptr_t) disk, 4*USLOSS_MIN_STACK, 2, 0, &pid);
         assert(rc == P1_SUCCESS);
 
-        char mutexName[20];
-        snprintf(mutexName, 20, "Mutex Semaphore %d", disk);
-        rc = P1_SemCreate(mutexName, 1, &DiskInfoArray[disk].mutex_SemID);
+        char mutexName[32];
+        snprintf(mutexName, 32, "Mutex Semaphore %d", disk);
+        rc = P1_SemCreate(mutexName, 1, &(DiskInfoArray[disk].mutex_SemID));
         assert(rc == P1_SUCCESS);
 
-        char requestSemName[24];
-        snprintf(requestSemName, 24, "Request Semaphore %d", disk);
-        rc = P1_SemCreate(requestSemName, 0, &DiskInfoArray[disk].waitingRequest_SemID);
+        char requestSemName[32];
+        snprintf(requestSemName, 32, "Request Semaphore %d", disk);
+        rc = P1_SemCreate(requestSemName, 0, &(DiskInfoArray[disk].waitingRequest_SemID));
         assert(rc == P1_SUCCESS);
 
-        char completedSemName[24];
-        snprintf(completedSemName, 24, "Completed Semaphore %d", disk);
-        rc = P1_SemCreate(completedSemName, 0, &DiskInfoArray[disk].requestCompleted_SemID);
+        char completedSemName[32];
+        snprintf(completedSemName, 32, "Completed Semaphore %d", disk);
+        rc = P1_SemCreate(completedSemName, 0, &(DiskInfoArray[disk].requestCompleted_SemID));
         assert(rc == P1_SUCCESS);
 
         USLOSS_DeviceRequest request;
         request.opr = USLOSS_DISK_TRACKS;
-        request.reg1 = &DiskInfoArray[disk].numTracks;
+        request.reg1 = &(DiskInfoArray[disk].numTracks);
+        request.reg2 = NULL;
         rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request); assert(rc == USLOSS_DEV_OK);
         rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
     }
@@ -135,6 +136,7 @@ DiskDriver(void *arg) {
 
     int disk = (int) arg;
     int rc;
+    int status;
     int currentTrack;
     int currentSector;
     void *buffer;
@@ -157,11 +159,12 @@ DiskDriver(void *arg) {
             // Move head to correct track;
             request.opr = USLOSS_DISK_SEEK;
             request.reg1 = (void *)(uintptr_t) DiskInfoArray[disk].startingTrack;
-            rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request);
+            rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request); assert(rc == P1_SUCCESS);
+            rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
             assert(rc == USLOSS_DEV_OK);
 
             for (int i = 0; i < DiskInfoArray[disk].sectors; i++) {
-                if (currentSector % NUM_SECTORS == 0) { //if the current_sector is a multiple of 16 - move to the next track
+                if (currentSector % NUM_SECTORS == 0 && i != 0) { //if the current_sector is a multiple of 16 - move to the next track
                     currentTrack++;
 //                    if(currentTrack > DiskInfoArray[disk].numTracks){
 //                        DiskInfoArray[disk].status = P2_INVALID_TRACK;
@@ -177,11 +180,10 @@ DiskDriver(void *arg) {
                 // Fill out request struct for read or write
                 request.opr = DiskInfoArray[disk].operation;
                 request.reg1 = (void *)(uintptr_t) currentSector;
-                request.reg2 = buffer;
-                buffer += NUM_BYTES;
+                request.reg2 = buffer + (NUM_BYTES * i);
 
-                rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request);
-                assert(rc == USLOSS_DEV_OK);
+                rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request); assert(rc == USLOSS_DEV_OK);
+                rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
 
 //                if(rc != USLOSS_DEV_OK){
 //                    free(request);

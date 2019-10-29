@@ -36,7 +36,7 @@ PHASE1C_VERSION = 1.0
 PHASE1D_VERSION = 1.2
 
 # Set to version of Phase2a you want to use.
-PHASE2A_VERSION = 1.1
+PHASE2A_VERSION = 1.0
 
 # Set to version of Phase2b you want to use.
 PHASE2B_VERSION = 1.0
