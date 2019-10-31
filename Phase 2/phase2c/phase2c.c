@@ -344,7 +344,7 @@ P2_DiskSize(int unit, int *sector, int *track, int *disk)
         USLOSS_IllegalInstruction();
     }
 
-    if (unit < 0 || unit >= USLOSS_DISK_UNITS) {
+    if (unit < 0 || unit >= USLOSS_DISK_UNITS || DiskInfoArray[unit].diskConnected == 0) {
         return P1_INVALID_UNIT;
     } else if (sector == NULL || track == NULL || disk == NULL) {
         return P2_NULL_ADDRESS;
