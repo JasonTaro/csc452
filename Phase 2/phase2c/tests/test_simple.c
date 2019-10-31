@@ -32,11 +32,11 @@ int P3_Startup(void *arg) {
     assert(rc == P1_SUCCESS);
     USLOSS_Console("Wrote \"%s\".\n", buffer);
 
-//    USLOSS_Console("Write to the disk.\n");
-//    rc = Sys_DiskWrite(buffer, 3, 0, 2, 0);
-//    USLOSS_Console("Verify that the disk write was successful.\n");
-//    assert(rc == P1_SUCCESS);
-//    USLOSS_Console("Wrote \"%s\".\n", buffer);
+    USLOSS_Console("Write to the disk.\n");
+    rc = Sys_DiskWrite(buffer, 3, 0, 2, 1);
+    USLOSS_Console("Verify that the disk write was successful.\n");
+    assert(rc == P1_INVALID_UNIT);
+    USLOSS_Console("Wrote \"%s\".\n", buffer);
 
     bzero(buffer, sizeof(buffer));
     USLOSS_Console("Read from the disk.\n");
@@ -77,9 +77,7 @@ int P2_Startup(void *arg)
 
 void test_setup(int argc, char **argv) {
     int rc;
-
     rc = Disk_Create(NULL, 0, 10);
-    rc = Disk_Create(NULL, 1, 10);
     assert(rc == 0);
 }
 

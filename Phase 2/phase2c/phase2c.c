@@ -15,11 +15,10 @@ static void     DiskWriteStub(USLOSS_Sysargs *sysargs);
 static void     DiskSizeStub(USLOSS_Sysargs *sysargs);
 
 #define     ABORT       -1
-#define     NUM_SECTORS 16
-#define     NUM_BYTES   512
 
 struct DiskInfo {
     int disk;
+    int diskConnected;              // 1 if connected, 0 if not connected
     int mutex_SemID;                // initialized to 1
     int waitingRequest_SemID;       // initialized to 0
     int requestCompleted_SemID;     // initialized to 0
@@ -89,8 +88,14 @@ P2DiskInit(void)
         request.opr = USLOSS_DISK_TRACKS;
         request.reg1 = &(DiskInfoArray[disk].numTracks);
         request.reg2 = NULL;
-        rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request); assert(rc == USLOSS_DEV_OK);
-        rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
+        rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request);
+        if (rc == USLOSS_DEV_OK) {
+            DiskInfoArray[disk].diskConnected = 1;
+            rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
+        } else {
+            DiskInfoArray[disk].diskConnected = 0;
+        }
+
     }
 }
 
@@ -164,7 +169,7 @@ DiskDriver(void *arg) {
             assert(rc == USLOSS_DEV_OK);
 
             for (int i = 0; i < DiskInfoArray[disk].sectors; i++) {
-                if (currentSector % NUM_SECTORS == 0 && i != 0) { //if the current_sector is a multiple of 16 - move to the next track
+                if (currentSector % USLOSS_DISK_TRACK_SIZE == 0 && i != 0) { //if the current_sector is a multiple of 16 - move to the next track
                     currentTrack++;
 //                    if(currentTrack > DiskInfoArray[disk].numTracks){
 //                        DiskInfoArray[disk].status = P2_INVALID_TRACK;
@@ -180,7 +185,7 @@ DiskDriver(void *arg) {
                 // Fill out request struct for read or write
                 request.opr = DiskInfoArray[disk].operation;
                 request.reg1 = (void *)(uintptr_t) currentSector;
-                request.reg2 = buffer + (NUM_BYTES * i);
+                request.reg2 = buffer + (USLOSS_DISK_SECTOR_SIZE * i);
 
                 rc = USLOSS_DeviceOutput(USLOSS_DISK_DEV, disk, &request); assert(rc == USLOSS_DEV_OK);
                 rc = P1_WaitDevice(USLOSS_DISK_DEV, disk, &status); assert(rc == P1_SUCCESS);
@@ -207,14 +212,14 @@ DiskReadWriteHelper(int unit, int track, int first, int sectors, void *buffer, i
 {
     int rc;
 
-    if (unit < 0 || unit >= USLOSS_DISK_UNITS) {
+    if (unit < 0 || unit >= USLOSS_DISK_UNITS || DiskInfoArray[unit].diskConnected == 0) {
         return P1_INVALID_UNIT;
-    } else if (sectors <= 0 || ((track * NUM_SECTORS) + first + sectors) > (NUM_SECTORS * DiskInfoArray[unit].numTracks)) {
+    } else if (sectors <= 0 || ((track * USLOSS_DISK_TRACK_SIZE) + first + sectors) > (USLOSS_DISK_TRACK_SIZE * DiskInfoArray[unit].numTracks)) {
         return P2_INVALID_SECTORS;
     } else if(!buffer){
         return P2_NULL_ADDRESS;
 //    } else if(first < 1 || first > 16){
-    } else if(first < 0 || first >= NUM_SECTORS){
+    } else if(first < 0 || first >= USLOSS_DISK_TRACK_SIZE){
         return P2_INVALID_FIRST;
     } else if(track < 0 || track >= DiskInfoArray[unit].numTracks){
         return P2_INVALID_TRACK;
@@ -304,8 +309,8 @@ P2_DiskSize(int unit, int *sector, int *track, int *disk)
     } else if (sector == NULL || track == NULL || disk == NULL) {
         return P2_NULL_ADDRESS;
     } else {
-        *sector = NUM_BYTES;
-        *track = NUM_SECTORS;
+        *sector = USLOSS_DISK_SECTOR_SIZE;
+        *track = USLOSS_DISK_TRACK_SIZE;
         *disk = DiskInfoArray[unit].numTracks;
         return P1_SUCCESS;
     }
