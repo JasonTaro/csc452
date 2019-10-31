@@ -45,6 +45,11 @@ static DiskInfo DiskInfoArray[USLOSS_DISK_UNITS];
 void 
 P2DiskInit(void) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2DiskInit from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc;
     int status;
 
@@ -108,6 +113,11 @@ P2DiskInit(void)
 void 
 P2DiskShutdown(void) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2DiskShutdown from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc;
     for (int disk = 0; disk < USLOSS_DISK_UNITS; disk++) {
         rc = P1_P(DiskInfoArray[disk].mutex_SemID); assert(rc == P1_SUCCESS);
@@ -130,6 +140,11 @@ P2DiskShutdown(void)
  */
 static int 
 DiskDriver(void *arg) {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to DiskDriver from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     // repeat
     //   wait for next request
     //   while request isn't complete
@@ -250,6 +265,11 @@ DiskReadWriteHelper(int unit, int track, int first, int sectors, void *buffer, i
 int 
 P2_DiskRead(int unit, int track, int first, int sectors, void *buffer) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_DiskRead from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     // give request to the proper device driver
     // wait until device driver completes the request
     return DiskReadWriteHelper(unit, track, first, sectors, buffer, USLOSS_DISK_READ);
@@ -263,6 +283,11 @@ P2_DiskRead(int unit, int track, int first, int sectors, void *buffer)
 static void 
 DiskReadStub(USLOSS_Sysargs *sysargs) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to DiskReadStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     // unpack sysargs
     void* buffer = sysargs->arg1;
     int sectors = (int) sysargs->arg2;
@@ -282,12 +307,22 @@ DiskReadStub(USLOSS_Sysargs *sysargs)
 int
 P2_DiskWrite(int unit, int track, int first, int sectors, void *buffer)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: P2_DiskWrite to SleepStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     return DiskReadWriteHelper(unit, track, first, sectors, buffer, USLOSS_DISK_WRITE);
 }
 
 static void
 DiskWriteStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to DiskWriteStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     void* buffer = sysargs->arg1;
     int sectors = (int) sysargs->arg2;
     int firstTrack = (int) sysargs->arg3;
@@ -304,6 +339,11 @@ DiskWriteStub(USLOSS_Sysargs *sysargs)
 int
 P2_DiskSize(int unit, int *sector, int *track, int *disk)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_DiskSize from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     if (unit < 0 || unit >= USLOSS_DISK_UNITS) {
         return P1_INVALID_UNIT;
     } else if (sector == NULL || track == NULL || disk == NULL) {
@@ -319,6 +359,11 @@ P2_DiskSize(int unit, int *sector, int *track, int *disk)
 static void
 DiskSizeStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to DiskSizeStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int unit = (int) sysargs->arg1;
     int bytesInSector, sectorsInTrack, tracksInDisk;
 
