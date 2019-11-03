@@ -37,6 +37,11 @@ static void debug2(char *fmt, ...)
 
 int P2_Startup(void *arg)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P2_Startup from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc, pid, status;
 
     // initialize clock and disk drivers
@@ -74,6 +79,11 @@ int P2_Startup(void *arg)
 static void
 CreateStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to CreateStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     sysargs->arg4 = (void *) P1_SemCreate((char *) sysargs->arg2, (int) sysargs->arg1, 
                                           (void *) &sysargs->arg1);
 }
@@ -82,6 +92,11 @@ CreateStub(USLOSS_Sysargs *sysargs)
 static void
 SemPStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to SemPStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     sysargs->arg4 = (void *)(uintptr_t) P1_P((int) sysargs->arg1);
 }
 
@@ -89,6 +104,11 @@ SemPStub(USLOSS_Sysargs *sysargs)
 static void
 SemVStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to SemVStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     sysargs->arg4 = (void *)(uintptr_t) P1_V((int) sysargs->arg1);
 }
 
@@ -96,6 +116,11 @@ SemVStub(USLOSS_Sysargs *sysargs)
 static void
 SemFreeStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to SemFreeStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     sysargs->arg4 = (void *)(uintptr_t) P1_SemFree((int) sysargs->arg1);
 }
 
@@ -103,5 +128,10 @@ SemFreeStub(USLOSS_Sysargs *sysargs)
 static void
 SemNameStub(USLOSS_Sysargs *sysargs)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to SemNameStub from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     sysargs->arg4 = (void *)(uintptr_t) P1_SemName((int) sysargs->arg1, (char *) sysargs->arg2);
 }
