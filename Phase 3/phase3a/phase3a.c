@@ -341,7 +341,10 @@ PageTableFree(PID pid)
     if(pid < 0 || pid > P1_MAXPROC){
         return P1_INVALID_PID;
     }
-    free(pageTables[pid]);
+    if(initialized){
+        free(pageTables[pid]);
+    }
+
     return result;
 }
 
@@ -393,4 +396,6 @@ P3_PrintStats(P3_VmStats *stats)
     USLOSS_Console("\tpageOuts:\t%d\n", stats->pageOuts);
     USLOSS_Console("\treplaced:\t%d\n", stats->replaced);
 }
+
+
 
