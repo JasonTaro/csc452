@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <libuser.h>
 #include <libdisk.h>
-
+#include <stdint.h>
 #include "phase2Int.h"
 
 
