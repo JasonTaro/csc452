@@ -264,6 +264,7 @@ P3PageTableGet(PID pid, USLOSS_PTE **table)
 int
 P3PageTableSet(PID pid, USLOSS_PTE *table)
 {
+
     int result = P1_SUCCESS;
     if ((pid < 0) || (pid >= P1_MAXPROC)) {
         result = P1_INVALID_PID;
@@ -315,6 +316,20 @@ PageTableAllocateIdentity(int pages)
 {
     USLOSS_PTE  *table = NULL;
     // allocate and initialize table here
+    if(!initialized){
+        return NULL;
+    }
+    if(pages < 1){
+        return NULL;
+    }
+    table = malloc(sizeof(USLOSS_PTE) * pages);
+    if(table == NULL){
+        return NULL;
+    }
+
+    for(int i = 0; i < pages; i++){
+        table[i].frame = i;
+    }
     return table;
 }
 
@@ -323,6 +338,10 @@ PageTableFree(PID pid)
 {
     int result = P1_SUCCESS;
     // free table here
+    if(pid < 0 || pid > P1_MAXPROC){
+        return P1_INVALID_PID;
+    }
+    free(pageTables[pid]);
     return result;
 }
 
