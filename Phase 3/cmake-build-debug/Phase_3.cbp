@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="Phase_3"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Phase_3">
+				<Option output="/Users/kyle/Desktop/CSC 452/Phase 3/cmake-build-debug/Phase_3" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 3/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 3/."/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 3/phase3a"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/11.0.0/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 Phase_3"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Phase_3/fast">
+				<Option output="/Users/kyle/Desktop/CSC 452/Phase 3/cmake-build-debug/Phase_3" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/kyle/Desktop/CSC 452/Phase 3/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 3/."/>
+					<Add directory="/Users/kyle/Desktop/CSC 452/Phase 3/phase3a"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/11.0.0/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 Phase_3/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/kyle/Desktop/CSC\ 452/Phase\ 3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/CS452_Fall_2019_Phase_3.pdf">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/Makefile">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/README.md">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase2.h">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase3.h">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase3Int.h">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase3a/Makefile">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase3a/p3/p3stubs.c">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase3a/p3/p3stubsTest.c">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase3a/phase3a.c">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/phase3a/tests/test_basic.c">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/subdir.mk">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/tester.h">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/versions.mk">
+			<Option target="Phase_3"/>
+		</Unit>
+		<Unit filename="/Users/kyle/Desktop/CSC 452/Phase 3/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
