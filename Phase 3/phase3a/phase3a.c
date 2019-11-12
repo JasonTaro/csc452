@@ -319,7 +319,7 @@ PageTableAllocateIdentity(int pages)
     if(!initialized){
         return NULL;
     }
-    if(pages < 1){
+    if(pages < 0){
         return NULL;
     }
     table = malloc(sizeof(USLOSS_PTE) * pages);
@@ -328,7 +328,10 @@ PageTableAllocateIdentity(int pages)
     }
 
     for(int i = 0; i < pages; i++){
+        table[i].incore = 1;
         table[i].frame = i;
+        table[i].read = 1;
+        table[i].write = 1;
     }
     return table;
 }
@@ -361,8 +364,8 @@ int P3_Startup(void *arg)
     rc = Sys_Wait(&pid, &status);
     assert(rc == 0);
     assert(pid == pid4);
-//    Sys_VmShutdown(); MEANT TO BE P3_VmShutdown?
-    P3_VmShutdown();
+    Sys_VmShutdown();
+    //P3_VmShutdown();
     return 0;
 }
 
