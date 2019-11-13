@@ -345,7 +345,15 @@ PageTableFree(PID pid)
         return P1_INVALID_PID;
     }
     if(initialized){
-        free(pageTables[pid]);
+        USLOSS_PTE *table;
+        int rc = P3PageTableGet(pid, &table);
+        assert(rc == P1_SUCCESS);
+        if(table == NULL){
+            return P1_INVALID_PID;
+        }
+        free(table);
+        rc = P3PageTableSet(pid, NULL);
+        assert(rc == P1_SUCCESS);
     }
 
     return result;
