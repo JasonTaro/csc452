@@ -314,6 +314,11 @@ MMUShutdown(void)
 static USLOSS_PTE *
 PageTableAllocateIdentity(int pages)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to PageTableAllocateIdentity from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     USLOSS_PTE  *table = NULL;
     // allocate and initialize table here
     if(!initialized){
@@ -339,6 +344,10 @@ PageTableAllocateIdentity(int pages)
 static int
 PageTableFree(PID pid)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to PageTableFree from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
     int result = P1_SUCCESS;
     // free table here
     if(pid < 0 || pid > P1_MAXPROC){
@@ -373,7 +382,6 @@ int P3_Startup(void *arg)
     assert(rc == 0);
     assert(pid == pid4);
     Sys_VmShutdown();
-    //P3_VmShutdown();
     return 0;
 }
 
