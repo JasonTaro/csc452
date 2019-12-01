@@ -61,11 +61,12 @@ P3_VmInit(int unused, int pages, int frames, int pagers)
         result = P3_ALREADY_INITIALIZED;
         goto done;
     }
-
     if ((pagers < 0) || (pagers > P3_MAX_PAGERS)) {
         result = P3_INVALID_NUM_PAGERS;
         goto done;
     }
+
+    memset((char *) &P3_vmStats, 0, sizeof(P3_vmStats));
 
     for (int i = 0; i < P1_MAXPROC; i++) {
         pageTables[i] = NULL;
@@ -78,16 +79,16 @@ P3_VmInit(int unused, int pages, int frames, int pagers)
         USLOSS_Console("MMUInit failed: %d\n", result);
         goto done;
     }
+    numPages = pages;
+    numFrames = frames;
+    P3_vmStats.pages = pages;
+    P3_vmStats.frames = frames;
 
-    result = P3FrameInit(frames);
+    initialized = TRUE;
+
+    result = P3FrameInit(pages, frames);
     if (result != P1_SUCCESS) {
         USLOSS_Console("P3FrameInit failed: %d\n", result);
-        goto done;
-    }
-
-    result = P3PagerInit(pagers);
-    if (result != P1_SUCCESS) {
-        USLOSS_Console("P3PagerInit failed: %d\n", result);
         goto done;
     }
 
@@ -97,12 +98,12 @@ P3_VmInit(int unused, int pages, int frames, int pagers)
         goto done;
     }
 
-    numPages = pages;
-    numFrames = frames;
-    memset((char *) &P3_vmStats, 0, sizeof(P3_vmStats));
-    P3_vmStats.pages = pages;
-    P3_vmStats.frames = frames;
-    initialized = TRUE;
+    result = P3PagerInit(pages, frames, pagers);
+    if (result != P1_SUCCESS) {
+        USLOSS_Console("P3PagerInit failed: %d\n", result);
+        goto done;
+    }
+
     result = P1_SUCCESS;
 done:
     return result;
@@ -130,10 +131,10 @@ P3_VmShutdown(void)
     CheckMode();
     if (initialized) {
 
-        rc = P3SwapShutdown();
+        rc = P3PagerShutdown();
         assert(rc == P1_SUCCESS);
 
-        rc = P3PagerShutdown();
+        rc = P3SwapShutdown();
         assert(rc == P1_SUCCESS);
 
         rc = P3FrameShutdown();
@@ -150,8 +151,8 @@ P3_VmShutdown(void)
             }
         }
 
-        P3_PrintStats(&P3_vmStats);
         initialized = FALSE;      
+        P3_PrintStats(&P3_vmStats);
     }
 }
 
@@ -227,15 +228,15 @@ P3_FreePageTable(int pid)
     }
     if ((initialized) && (pageTables[pid] != NULL)) {
 
-        rc = P3FrameFreeAll(pid);
-        if (rc != P1_SUCCESS) {
-            USLOSS_Console("P3_FreePageTable: P3FrameFreeAll(%d) failed: %d\n", pid, rc);
-            goto done;
-        }
-
         rc = P3SwapFreeAll(pid);
         if (rc != P1_SUCCESS) {
             USLOSS_Console("P3_FreePageTable: P3SwapFreeAll(%d) failed: %d\n", pid, rc);
+            goto done;
+        }
+
+        rc = P3FrameFreeAll(pid);
+        if (rc != P1_SUCCESS) {
+            USLOSS_Console("P3_FreePageTable: P3FrameFreeAll(%d) failed: %d\n", pid, rc);
             goto done;
         }
 
@@ -264,7 +265,6 @@ P3PageTableGet(PID pid, USLOSS_PTE **table)
 int
 P3PageTableSet(PID pid, USLOSS_PTE *table)
 {
-
     int result = P1_SUCCESS;
     if ((pid < 0) || (pid >= P1_MAXPROC)) {
         result = P1_INVALID_PID;
@@ -314,57 +314,16 @@ MMUShutdown(void)
 static USLOSS_PTE *
 PageTableAllocateIdentity(int pages)
 {
-    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
-        USLOSS_Console("ERROR: Call to PageTableAllocateIdentity from user mode.\n");
-        USLOSS_IllegalInstruction();
-    }
-
     USLOSS_PTE  *table = NULL;
     // allocate and initialize table here
-    if(!initialized){
-        return NULL;
-    }
-    if(pages < 0){
-        return NULL;
-    }
-    table = malloc(sizeof(USLOSS_PTE) * pages);
-    if(table == NULL){
-        return NULL;
-    }
-
-    for(int i = 0; i < pages; i++){
-        table[i].incore = 1;
-        table[i].frame = i;
-        table[i].read = 1;
-        table[i].write = 1;
-    }
     return table;
 }
 
 static int
 PageTableFree(PID pid)
 {
-    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
-        USLOSS_Console("ERROR: Call to PageTableFree from user mode.\n");
-        USLOSS_IllegalInstruction();
-    }
     int result = P1_SUCCESS;
     // free table here
-    if(pid < 0 || pid > P1_MAXPROC){
-        return P1_INVALID_PID;
-    }
-    if(initialized){
-        USLOSS_PTE *table;
-        int rc = P3PageTableGet(pid, &table);
-        assert(rc == P1_SUCCESS);
-        if(table == NULL){
-            return P1_INVALID_PID;
-        }
-        free(table);
-        rc = P3PageTableSet(pid, NULL);
-        assert(rc == P1_SUCCESS);
-    }
-
     return result;
 }
 
@@ -375,7 +334,7 @@ int P3_Startup(void *arg)
     int status;
     int rc;
 
-    rc = Sys_Spawn("P4_Startup", P4_Startup, NULL,  3 * USLOSS_MIN_STACK, 3, &pid4);
+    rc = Sys_Spawn("P4_Startup", P4_Startup, NULL,  4 * USLOSS_MIN_STACK, 3, &pid4);
     assert(rc == 0);
     assert(pid4 >= 0);
     rc = Sys_Wait(&pid, &status);
@@ -415,6 +374,4 @@ P3_PrintStats(P3_VmStats *stats)
     USLOSS_Console("\tpageOuts:\t%d\n", stats->pageOuts);
     USLOSS_Console("\treplaced:\t%d\n", stats->replaced);
 }
-
-
 
