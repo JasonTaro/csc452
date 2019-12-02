@@ -226,6 +226,7 @@ P3FrameUnmap(int frame)
 typedef struct Fault {
     PID         pid;
     int         offset;
+    int         page;
     int         cause;
     SID         wait;
     // other stuff goes here
@@ -233,6 +234,8 @@ typedef struct Fault {
 } Fault;
 
 Fault* faultQueueHead;
+SID faultMutex;
+int faultNum = 0;
 
 /*
  *----------------------------------------------------------------------
@@ -247,37 +250,51 @@ Fault* faultQueueHead;
 static void
 FaultHandler(int type, void *arg)
 {
-    Fault   fault UNUSED;
     int rc;
 
+    rc = P1_P(faultMutex); assert(rc == P1_SUCCESS);
+
+    // FILL FAULT STRUCT
+    Fault   fault UNUSED;
     fault.offset = (int) arg;
+    fault.page = fault.offset / USLOSS_MmuPageSize();
     fault.pid = P1_GetPid();
-    fault.cause =
+    fault.cause = type;
+    fault.nextFault = NULL;
 
-    char startupName[32];
-    snprintf(startupName, 32, "Startup Semaphore %d", pager);
-    rc = P1_SemCreate(" Waiting" )fault.wait
+    // CREATE SEMAPHORE FOR FAULT TO WAIT
+    char waitName[32];
+    snprintf(waitName, 32, "Wait Semaphore %d", faultNum++);
+    rc = P1_SemCreate(waitName, 0, &fault.wait); assert (rc == P1_SUCCESS);
 
+    // ADD FAULT TO QUEUE
     if (faultQueueHead == NULL) {
-        faultQueueHead = fault;
+        faultQueueHead = &fault;
+    } else {
+        Fault* current = faultQueueHead;
+        while (current->nextFault != NULL) { current = current->nextFault; }
+        current->nextFault = &fault;
     }
+
+    rc = P1_V(faultMutex); assert(rc == P1_SUCCESS);
+
+    // WAIT FOR FAULT TO BE HANDLED BEFORE RETURNING
+    rc = P1_P(fault.wait); assert (rc == P1_SUCCESS);
+
     // fill in other fields in fault
     // add to queue of pending faults
     // let pagers know there is a pending fault
     // wait for fault to be handled
-
-    // kill off faulting process so skeleton code doesn't hang
-    // delete this in your solution
-    P2_Terminate(42);
 }
 
 struct Pager {
     SID         startup;
     SID         completed;
+    int         abort;
 };
 
+int pagersNum;
 SID pagerWait;
-
 struct Pager* pagerTable;
 
 /*
@@ -297,21 +314,22 @@ struct Pager* pagerTable;
 int
 P3PagerInit(int pages, int frames, int pagers)
 {
-
     if (pagerTable != NULL) { return P3_ALREADY_INITIALIZED; }
     if (pagers < 1) { return P3_INVALID_NUM_PAGERS; }
 
     int     result = P1_SUCCESS;
     int     rc;
 
-
     USLOSS_IntVec[USLOSS_MMU_INT] = FaultHandler;
     pagerTable = malloc(sizeof(struct Pager) * pagers);
 
-    rc = P1_SemCreate("Pager Wait", 0, &pagerWait);
-    assert(rc == P1_SUCCESS);
+    rc = P1_SemCreate("Fault Mutex", 1, &faultMutex); assert(rc == P1_SUCCESS);
+
+    pagersNum = pagers;
 
     for (int pager = 0; pager < pagers; pager++) {
+
+        // INITIALIZE THE SEMAPHORES
         char startupName[32];
         snprintf(startupName, 32, "Startup Semaphore %d", pager);
         rc = P1_SemCreate(startupName, 0, &(pagerTable[pager].startup));
@@ -319,22 +337,24 @@ P3PagerInit(int pages, int frames, int pagers)
 
         char completedSemName[32];
         snprintf(completedSemName, 32, "Completed Semaphore %d", pager);
-        rc = P1_SemCreate(completedSemName, 0, &(pagerTable[pager].startup));
+        rc = P1_SemCreate(completedSemName, 0, &(pagerTable[pager].completed));
         assert(rc == P1_SUCCESS);
-    }
 
-    for (int pager = 0; pager < pagers; pager++) {
+        // INITIALIZE ABORT FIELD
+        pagerTable[pager].abort = FALSE;
+
+        // FORK THE PROCESS
         int pid;
         char processesName[32];
         snprintf(processesName, 32, "Pager %d", pager);
         rc = P1_Fork(processesName, Pager, (void *)(uintptr_t) pager, 4*USLOSS_MIN_STACK, 2, 0, &pid);
         assert(rc == P1_SUCCESS);
-    }
 
-    for (int pager = 0; pager < pagers; pager++) {
+        // WAIT FOR IT TO START RUNNING
         rc = P1_P(pagerTable[pager].startup);
         assert(rc == P1_SUCCESS);
     }
+
 
     // initialize the pager data structures
     // fork off the pagers and wait for them to start running
@@ -358,15 +378,23 @@ P3PagerInit(int pages, int frames, int pagers)
 int
 P3PagerShutdown(void)
 {
-    int result = P1_SUCCESS;
+    if (pagerTable == NULL) { return P3_NOT_INITIALIZED; }
     int rc;
+    for (int pager = 0; pager < pagersNum; pager++) {
+        pagerTable[pager].abort = TRUE;
+    }
 
+
+    rc = P1_SemFree(faultMutex); assert(rc == P1_SUCCESS);
+
+
+    abort
     rc = P1_V()
 
     // cause the pagers to quit
     // clean up the pager data structures
 
-    return result;
+    return P1_SUCCESS;
 }
 
 /*
@@ -385,19 +413,43 @@ Pager(void *arg)
     int pager = (int) arg;
     int rc;
 
-    rc = P1_V(pagerTable[pager].startup);
+    // LET STARTUP KNOW THE PROCESS IS RUNNING
+    rc = P1_V(pagerTable[pager].startup); assert(rc == P1_SUCCESS);
+
 
     while (TRUE) {
-        P1_P(pagerTable);
+        rc = P1_P(faultMutex); assert(rc == P1_SUCCESS);
         Fault* currentFault = faultQueueHead;
         faultQueueHead = currentFault->nextFault;
+        rc = P1_V(faultMutex); assert(rc == P1_SUCCESS);
+
+        rc = P1_P(pagerWait); assert(rc == P1_SUCCESS);
 
         if (currentFault->cause == ABORT) {
             break;
         } else if (currentFault->cause == ACCESS){
-            // Kill the bad process
+            P2_Terminate(0);
         } else {
-            for
+            int frame = NULL;
+            for (int i = 0; i < P3_vmStats.frames; i++) {
+                if (framesInUse[i] == 0) { frame = i; }
+            }
+
+            if (frame == NULL) {
+                rc = P3SwapOut(&frame); assert(rc == P1_SUCCESS);
+            }
+
+            rc = P3SwapIn(P1_GetPid(), currentFault->page, frame);
+
+            if (rc == P3_EMPTY_PAGE) {
+                void* addr;
+                int rc2;
+                rc2 = P3FrameMap(frame, &addr);
+            } else if (rc == P3_OUT_OF_SWAP) {
+                P2_Terminate(0);
+            }
+
+
         }
     }
     /********************************

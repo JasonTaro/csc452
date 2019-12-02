@@ -1,1 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/cc -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/Phase_3.dir/phase3a/p3/p3stubs.c.o CMakeFiles/Phase_3.dir/phase3a/p3/p3stubsTest.c.o CMakeFiles/Phase_3.dir/phase3a/tests/test_basic.c.o CMakeFiles/Phase_3.dir/phase3a/phase3a.c.o  -o Phase_3 
