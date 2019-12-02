@@ -102,7 +102,7 @@ P4_Startup(void *arg)
     SID     sid;
 
     Debug("P4_Startup starting.\n");
-    rc = Sys_VmInit(PAGES, PAGES, PAGES, 0, (void **) &vmRegion);
+    rc = Sys_VmInit(PAGES, PAGES, PAGES, 0, (void **) & );
     TEST(rc, P1_SUCCESS);
 
     rc = Sys_SemCreate("ready", 0, &sid);
