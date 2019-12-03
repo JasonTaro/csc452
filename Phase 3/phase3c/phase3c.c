@@ -9,7 +9,6 @@
 #include <usloss.h>
 #include <string.h>
 #include <libuser.h>
-
 #include "phase3.h"
 #include "phase3Int.h"
 
@@ -33,8 +32,13 @@ void debug3(char *fmt, ...)
 
 #define UNUSED __attribute__((unused))
 
-int* framesInUse = NULL;
 
+typedef struct Frame {
+    USLOSS_PTE* page;
+    int num;
+    int inUse;
+} Frame;
+Frame* framesInUse;
 static int Pager(void *arg);
 /*
  *----------------------------------------------------------------------
@@ -56,8 +60,12 @@ P3FrameInit(int pages, int frames)
 
     if (framesInUse != NULL) { return P3_ALREADY_INITIALIZED; }
 
-    framesInUse = malloc(sizeof(int) * frames);
-    for (int i = 0; i < frames; i++) { framesInUse[i] = 0; }
+    framesInUse = malloc(sizeof(Frame) * frames);
+    for (int i = 0; i < frames; i++) {
+        framesInUse[i].inUse = 0;
+        framesInUse[i].num = i;
+        framesInUse[i].page = NULL;
+    }
 
     P3_vmStats.freeFrames = frames;
     P3_vmStats.pages = pages;
@@ -124,7 +132,8 @@ P3FrameFreeAll(int pid)
     int i;
     for (i = 0; i < P3_vmStats.pages; i++) {
         if (table[i].incore == 1) {
-            framesInUse[table[i].frame] = 0;
+            framesInUse[table[i].frame].inUse = 0;
+            framesInUse[table[i].frame].page = NULL;
         }
     }
 
@@ -156,14 +165,16 @@ P3FrameMap(int frame, void **ptr)
 
     int i, pid, rc;
     pid = P1_GetPid();
-    USLOSS_PTE* table = P3PageTableGet(pid);
+    USLOSS_PTE* table;
+    rc =  P3PageTableGet(pid, &table);
     for (i = 0; i < P3_vmStats.pages; i++) {
         if (table[i].incore == 0) {
             table[i].incore = 1;
             table[i].frame = frame;
             *ptr = &table[i];
 
-            framesInUse[frame] = 1;
+            framesInUse[frame].inUse = 1;
+            framesInUse[frame].page = &table[i];
 
             rc = USLOSS_MmuSetPageTable(table); assert(rc == USLOSS_MMU_OK);
             return P1_SUCCESS;
@@ -200,13 +211,15 @@ P3FrameUnmap(int frame)
 
     int i, pid, rc;
     pid = P1_GetPid();
-    USLOSS_PTE* table = P3PageTableGet(pid);
+    USLOSS_PTE* table;
+    rc = P3PageTableGet(pid, &table);
     for (i = 0; i < P3_vmStats.pages; i++) {
         if (table[i].frame == frame && table[i].incore == 1) {
 
             table[i].incore = 0;
 
-            framesInUse[frame] = 0;
+            framesInUse[frame].inUse = 0;
+            framesInUse[frame].page = NULL;
 
             rc = USLOSS_MmuSetPageTable(table); assert(rc == USLOSS_MMU_OK);
             return P1_SUCCESS;
@@ -387,9 +400,7 @@ P3PagerShutdown(void)
 
     rc = P1_SemFree(faultMutex); assert(rc == P1_SUCCESS);
 
-
-    abort
-    rc = P1_V()
+    //V
 
     // cause the pagers to quit
     // clean up the pager data structures
@@ -425,17 +436,20 @@ Pager(void *arg)
 
         rc = P1_P(pagerWait); assert(rc == P1_SUCCESS);
 
-        if (currentFault->cause == ABORT) {
+
+        //abort = 1
+        //access = 2
+        if (currentFault->cause == 1) {
             break;
-        } else if (currentFault->cause == ACCESS){
+        } else if (currentFault->cause == 2){
             P2_Terminate(0);
         } else {
-            int frame = NULL;
+            int frame  = - 1;
             for (int i = 0; i < P3_vmStats.frames; i++) {
-                if (framesInUse[i] == 0) { frame = i; }
+                if (framesInUse[i].inUse == 0) { frame = i; }
             }
 
-            if (frame == NULL) {
+            if (frame == -1) {
                 rc = P3SwapOut(&frame); assert(rc == P1_SUCCESS);
             }
 
