@@ -40,6 +40,10 @@ typedef struct Frame {
 } Frame;
 Frame* framesInUse;
 static int Pager(void *arg);
+SID faultMutex;
+SID pagerMutex;
+static int pager_init;
+int pager_count = 1;
 /*
  *----------------------------------------------------------------------
  *
@@ -57,7 +61,7 @@ int
 P3FrameInit(int pages, int frames)
 {
     int result = P1_SUCCESS;
-
+    int rc;
     if (framesInUse != NULL) { return P3_ALREADY_INITIALIZED; }
 
     framesInUse = malloc(sizeof(Frame) * frames);
@@ -71,6 +75,7 @@ P3FrameInit(int pages, int frames)
     P3_vmStats.pages = pages;
     P3_vmStats.frames = frames;
 
+    rc = P1_SemCreate("Fault Mutex", 1, &faultMutex); assert(rc == P1_SUCCESS);
     // initialize the frame data structures, e.g. the pool of free frames
     // set P3_vmStats.freeFrames
 
@@ -247,7 +252,7 @@ typedef struct Fault {
 } Fault;
 
 Fault* faultQueueHead;
-SID faultMutex;
+
 int faultNum = 0;
 
 /*
@@ -334,9 +339,7 @@ P3PagerInit(int pages, int frames, int pagers)
     int     rc;
 
     USLOSS_IntVec[USLOSS_MMU_INT] = FaultHandler;
-    pagerTable = malloc(sizeof(struct Pager) * pagers);
 
-    rc = P1_SemCreate("Fault Mutex", 1, &faultMutex); assert(rc == P1_SUCCESS);
 
     pagersNum = pagers;
 
@@ -367,12 +370,12 @@ P3PagerInit(int pages, int frames, int pagers)
         rc = P1_P(pagerTable[pager].startup);
         assert(rc == P1_SUCCESS);
     }
-
+    return result;
 
     // initialize the pager data structures
     // fork off the pagers and wait for them to start running
 
-    return result;
+
 }
 
 /*
