@@ -12,11 +12,13 @@
 #include "phase3.h"
 #include "phase3Int.h"
 
+#
 #ifdef DEBUG
 int debugging3 = 1;
 #else
 int debugging3 = 0;
 #endif
+
 
 void debug3(char *fmt, ...)
 {
@@ -31,6 +33,7 @@ void debug3(char *fmt, ...)
 // This allows the skeleton code to compile. Remove it in your solution.
 
 #define UNUSED __attribute__((unused))
+#define ABORT 99
 
 /*
 typedef struct Frame {
@@ -39,7 +42,7 @@ typedef struct Frame {
     int inUse;
 } Frame;
  */
-int *framesInUse;
+int *framesInUse = NULL;
 static int Pager(void *arg);
 SID faultMutex;
 SID pagerMutex;
@@ -60,6 +63,11 @@ int pager_count = 1;
 int
 P3FrameInit(int pages, int frames)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3FrameInit from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int result = P1_SUCCESS;
     int rc;
     if (framesInUse != NULL) { return P3_ALREADY_INITIALIZED; }
@@ -97,6 +105,11 @@ P3FrameInit(int pages, int frames)
 int
 P3FrameShutdown(void)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3FrameShutdown from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int result = P1_SUCCESS;
 
     if (framesInUse == NULL) { return P3_NOT_INITIALIZED; }
@@ -125,10 +138,15 @@ P3FrameShutdown(void)
 int
 P3FrameFreeAll(int pid)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3FrameFreeAll from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int result = P1_SUCCESS;
 
     if (framesInUse == NULL) { return P3_NOT_INITIALIZED; }
-    else if (pid < 0 || pid > P1_MAXPROC) { return P1_INVALID_PID; }
+    else if (pid < 0 || pid >= P1_MAXPROC) { return P1_INVALID_PID; }
 
     USLOSS_PTE* table;
     int rc = P3PageTableGet(pid, &table);
@@ -165,13 +183,18 @@ P3FrameFreeAll(int pid)
 int
 P3FrameMap(int frame, void **ptr) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3FrameMap from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     if (framesInUse == NULL) { return P3_NOT_INITIALIZED; }
     else if (frame < 0 || frame >= P3_vmStats.frames) { return P3_INVALID_FRAME; }
 
     int i, pid, rc;
     pid = P1_GetPid();
     USLOSS_PTE* table;
-    rc =  P3PageTableGet(pid, &table);
+    rc =  P3PageTableGet(pid, &table); assert(rc == P1_SUCCESS);
     for (i = 0; i < P3_vmStats.pages; i++) {
         if (table[i].incore == 0) {
             table[i].incore = 1;
@@ -211,13 +234,18 @@ P3FrameMap(int frame, void **ptr)
 int
 P3FrameUnmap(int frame) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3FrameUnmap from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     if (framesInUse == NULL) { return P3_NOT_INITIALIZED; }
     else if (frame < 0 || frame >= P3_vmStats.frames) { return P3_INVALID_FRAME; }
 
     int i, pid, rc;
     pid = P1_GetPid();
     USLOSS_PTE* table;
-    rc = P3PageTableGet(pid, &table);
+    rc = P3PageTableGet(pid, &table); assert(rc == P1_SUCCESS);
     for (i = 0; i < P3_vmStats.pages; i++) {
         if (table[i].frame == frame && table[i].incore == 1) {
 
@@ -251,8 +279,8 @@ typedef struct Fault {
     struct Fault*      nextFault;
 } Fault;
 
-Fault* faultQueueHead;
-
+Fault* faultQueueHead = NULL;
+SID waitingFaults;
 int faultNum = 0;
 
 /*
@@ -268,6 +296,11 @@ int faultNum = 0;
 static void
 FaultHandler(int type, void *arg)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to FaultHandler from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc;
 
     rc = P1_P(faultMutex); assert(rc == P1_SUCCESS);
@@ -294,6 +327,8 @@ FaultHandler(int type, void *arg)
         current->nextFault = &fault;
     }
 
+    rc = P1_V(waitingFaults); assert(rc == P1_SUCCESS);
+
     rc = P1_V(faultMutex); assert(rc == P1_SUCCESS);
 
     // WAIT FOR FAULT TO BE HANDLED BEFORE RETURNING
@@ -308,12 +343,11 @@ FaultHandler(int type, void *arg)
 struct Pager {
     SID         startup;
     SID         completed;
-    int         abort;
 };
 
-int pagersNum;
+int pagersNum = 0;
 SID pagerWait;
-struct Pager* pagerTable;
+struct Pager* pagerTable = NULL;
 
 /*
  *----------------------------------------------------------------------
@@ -332,6 +366,11 @@ struct Pager* pagerTable;
 int
 P3PagerInit(int pages, int frames, int pagers)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3PagerInit from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     if (pagerTable != NULL) { return P3_ALREADY_INITIALIZED; }
     if (pagers < 1) { return P3_INVALID_NUM_PAGERS; }
 
@@ -355,9 +394,6 @@ P3PagerInit(int pages, int frames, int pagers)
         snprintf(completedSemName, 32, "Completed Semaphore %d", pager);
         rc = P1_SemCreate(completedSemName, 0, &(pagerTable[pager].completed));
         assert(rc == P1_SUCCESS);
-
-        // INITIALIZE ABORT FIELD
-        pagerTable[pager].abort = FALSE;
 
         // FORK THE PROCESS
         int pid;
@@ -394,12 +430,19 @@ P3PagerInit(int pages, int frames, int pagers)
 int
 P3PagerShutdown(void)
 {
-    if (pagerTable == NULL) { return P3_NOT_INITIALIZED; }
-    int rc;
-    for (int pager = 0; pager < pagersNum; pager++) {
-        pagerTable[pager].abort = TRUE;
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3PagerShutdown from user mode.\n");
+        USLOSS_IllegalInstruction();
     }
 
+    if (pagerTable == NULL) { return P3_NOT_INITIALIZED; }
+    int rc;
+
+    rc = P1_P(faultMutex); assert (rc == P1_SUCCESS);
+    for (int pager = 0; pager < pagersNum; pager++) {
+//        pagerTable.
+    }
+    rc = P1_V(faultMutex); assert (rc == P1_SUCCESS);
 
     rc = P1_SemFree(faultMutex); assert(rc == P1_SUCCESS);
 
@@ -424,6 +467,11 @@ P3PagerShutdown(void)
 static int
 Pager(void *arg)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to Pager from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int pager = (int) arg;
     int rc;
 
@@ -432,6 +480,9 @@ Pager(void *arg)
 
 
     while (TRUE) {
+        // wait for a fault
+        rc = P1_P(waitingFaults); assert(rc == P1_SUCCESS);
+
         rc = P1_P(faultMutex); assert(rc == P1_SUCCESS);
         Fault* currentFault = faultQueueHead;
         faultQueueHead = currentFault->nextFault;
@@ -444,7 +495,7 @@ Pager(void *arg)
         //access = 2
         if (currentFault->cause == 1) {
             break;
-        } else if (currentFault->cause == 2){
+        } else if (currentFault->cause == USLOSS_MMU_ACCESS){
             P2_Terminate(0);
         } else {
             int frame  = - 1;

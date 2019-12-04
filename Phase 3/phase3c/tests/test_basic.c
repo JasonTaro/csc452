@@ -31,6 +31,7 @@
 #define PAGES 2         // # of pages per process (be sure to try different values)
 #define ITERATIONS 10
 #define PAGERS 2        // # of pagers
+#define DEBUG
 
 static char *vmRegion;
 static char *names[] = {"A","B"};   // names of children, add more names to create more children
@@ -112,8 +113,8 @@ P4_Startup(void *arg)
 
     Debug("P4_Startup starting.\n");
     rc = Sys_VmInit(PAGES, PAGES, numChildren * PAGES, PAGERS, (void **) &vmRegion);
+    printf("assfuckmedaddy");
     TEST(rc, P1_SUCCESS);
-
 
     pageSize = USLOSS_MmuPageSize();
     for (i = 0; i < numChildren; i++) {

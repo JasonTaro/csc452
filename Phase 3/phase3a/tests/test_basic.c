@@ -25,12 +25,14 @@ typedef int SID;
 
 static char *vmRegion;
 static int  pageSize;
+#define DEBUG 1
 
 #ifdef DEBUG
 int debugging = 1;
 #else
 int debugging = 0;
 #endif /* DEBUG */
+
 
 
 static int passed = FALSE;
