@@ -32,17 +32,17 @@ void debug3(char *fmt, ...)
 
 #define UNUSED __attribute__((unused))
 
-
+/*
 typedef struct Frame {
     USLOSS_PTE* page;
     int num;
     int inUse;
 } Frame;
-Frame* framesInUse;
+ */
+int *framesInUse;
 static int Pager(void *arg);
 SID faultMutex;
 SID pagerMutex;
-static int pager_init;
 int pager_count = 1;
 /*
  *----------------------------------------------------------------------
@@ -64,11 +64,11 @@ P3FrameInit(int pages, int frames)
     int rc;
     if (framesInUse != NULL) { return P3_ALREADY_INITIALIZED; }
 
-    framesInUse = malloc(sizeof(Frame) * frames);
+    framesInUse = malloc(sizeof(int) * frames);
     for (int i = 0; i < frames; i++) {
-        framesInUse[i].inUse = 0;
-        framesInUse[i].num = i;
-        framesInUse[i].page = NULL;
+        framesInUse[i] = 0;
+        //framesInUse[i].num = i;
+        //framesInUse[i].page = NULL;
     }
 
     P3_vmStats.freeFrames = frames;
@@ -137,8 +137,8 @@ P3FrameFreeAll(int pid)
     int i;
     for (i = 0; i < P3_vmStats.pages; i++) {
         if (table[i].incore == 1) {
-            framesInUse[table[i].frame].inUse = 0;
-            framesInUse[table[i].frame].page = NULL;
+            framesInUse[table[i].frame] = 0;
+            //framesInUse[table[i].frame].page = NULL;
         }
     }
 
@@ -178,8 +178,8 @@ P3FrameMap(int frame, void **ptr)
             table[i].frame = frame;
             *ptr = &table[i];
 
-            framesInUse[frame].inUse = 1;
-            framesInUse[frame].page = &table[i];
+            framesInUse[frame] = 1;
+          //  framesInUse[frame].page = &table[i];
 
             rc = USLOSS_MmuSetPageTable(table); assert(rc == USLOSS_MMU_OK);
             return P1_SUCCESS;
@@ -223,8 +223,8 @@ P3FrameUnmap(int frame)
 
             table[i].incore = 0;
 
-            framesInUse[frame].inUse = 0;
-            framesInUse[frame].page = NULL;
+            framesInUse[frame] = 0;
+         //   framesInUse[frame].page = NULL;
 
             rc = USLOSS_MmuSetPageTable(table); assert(rc == USLOSS_MMU_OK);
             return P1_SUCCESS;
@@ -449,7 +449,7 @@ Pager(void *arg)
         } else {
             int frame  = - 1;
             for (int i = 0; i < P3_vmStats.frames; i++) {
-                if (framesInUse[i].inUse == 0) { frame = i; }
+                if (framesInUse[i] == 0) { frame = i; }
             }
 
             if (frame == -1) {
