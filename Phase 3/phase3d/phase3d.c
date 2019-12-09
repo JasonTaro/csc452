@@ -45,6 +45,14 @@ static int debugging3 = 1;
 static int debugging3 = 0;
 #endif
 
+struct frameInfo {
+    int busy;
+} typedef frameInfo;
+
+SID mutex;
+
+frameInfo* frames;
+
 static void debug3(char *fmt, ...)
 {
     va_list ap;
@@ -69,9 +77,19 @@ static void debug3(char *fmt, ...)
  *----------------------------------------------------------------------
  */
 int
-P3SwapInit(int pages, int frames)
+P3SwapInit(int pages, int framesNum)
 {
     int result = P1_SUCCESS;
+    int i, rc;
+
+    frames = malloc(sizeof(frameInfo) * framesNum);
+    for (i = 0; i < framesNum; i++) {
+        frames[i].referenced = FALSE;
+        frames[i].dirty = FALSE;
+        frames[i].busy = FALSE;
+    }
+
+    rc = P1_SemCreate("Mutex", 1, &mutex); assert (rc == P1_SUCCESS);
 
     // initialize the swap data structures, e.g. the pool of free blocks
 
@@ -150,6 +168,37 @@ int
 P3SwapOut(int *frame) 
 {
     int result = P1_SUCCESS;
+    int target, rc, access;
+
+    static int hand = -1;
+    rc = P1_P(mutex); assert (rc == P1_SUCCESS);
+    while(TRUE) {
+        hand = (hand + 1) % P3_vmStats.frames;
+        if (frames[hand].busy == FALSE) {
+            rc = USLOSS_MmuGetAccess(hand, &access); assert (rc == USLOSS_MMU_OK);
+            if (access == USLOSS_MMU_REF) {
+                target = hand;
+                break;
+            } else {
+                rc = USLOSS_MmuSetAccess(hand, 0); assert (rc == USLOSS_MMU_OK);
+            }
+        }
+    }
+
+    rc = USLOSS_MmuGetAccess(target, &access); assert (rc == USLOSS_MMU_OK);
+    if (access == USLOSS_MMU_DIRTY) {
+//        write page to its location on the swap disk (P3FrameMap,P2_DiskWrite,P3FrameUnmap)
+        void* address;
+        rc = P3FrameMap(target, &address); assert (rc == P1_SUCCESS);
+//        P2_DiskWrite(P3_SWAP_DISK )
+
+
+        rc = USLOSS_MmuSetAccess(target, 0); assert (rc == USLOSS_MMU_OK);
+    }
+    rc = P3FrameUnmap(target); assert (rc == P1_SUCCESS);
+    frames[target].busy = TRUE;
+    rc = P1_V(mutex); assert (rc == P1_SUCCESS);
+    *frame = target;
 
     /*****************
 
@@ -202,6 +251,20 @@ int
 P3SwapIn(int pid, int page, int frame)
 {
     int result = P1_SUCCESS;
+    int rc;
+
+
+    rc = P1_P(mutex); assert (rc == P1_SUCCESS);
+//    if page is on swap disk
+//        read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
+//    else
+//        allocate space for the page on the swap disk
+//        if no more space
+//            result = P3_OUT_OF_SWAP
+//        else
+//            result = P3_EMPTY_PAGE
+//    mark frame as not busy
+    rc = P1_V(mutex); assert (rc == P1_SUCCESS);
 
     /*****************
 
