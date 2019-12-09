@@ -334,6 +334,7 @@ P3SwapIn(int pid, int page, int frame)
         }
         rc = P2_DiskRead(P3_SWAP_DISK, track_count, sector_count, pageSize / sector, page_addy); assert(rc == P1_SUCCESS);
 
+        rc = P3FrameUnmap(frame); assert (rc == P1_SUCCESS);
     } else {
         int slotFound = FALSE;
 
