@@ -58,15 +58,15 @@ struct slot {
     int pid;
     int in_use;
 }typedef slot;
+
 struct frameInfo {
-    //this is good
     int busy;
 } typedef frameInfo;
 
 SID mutex;
 slot* diskSlots;
 frameInfo* frames;
-static int init = 0;
+static int init = FALSE;
 static void debug3(char *fmt, ...)
 {
     va_list ap;
@@ -93,9 +93,7 @@ static void debug3(char *fmt, ...)
 int
 P3SwapInit(int pages, int framesNum)
 {
-    if(init == 1){
-        return P3_ALREADY_INITIALIZED;
-    }
+    if (init == TRUE) { return P3_ALREADY_INITIALIZED; }
     int result = P1_SUCCESS;
     int i, rc;
     int sector; // # of bytes in a sector
@@ -109,15 +107,11 @@ P3SwapInit(int pages, int framesNum)
     pageSize = USLOSS_MmuPageSize();
     numSlots = (track / (pageSize / sector)) * disk;
 
-    diskSlots = malloc(sizeof(slot) * numSlots);
-    for(i = 0; i < numSlots; i++){
-        diskSlots[i].in_use = 0;
-    }
-
     frames = malloc(sizeof(frameInfo) * framesNum);
-    for (i = 0; i < framesNum; i++) {
-        frames[i].busy = FALSE;
-    }
+    for (i = 0; i < framesNum; i++) { frames[i].busy = FALSE; }
+
+    diskSlots = malloc(sizeof(slot) * numSlots);
+    for (i = 0; i < numSlots; i++){ diskSlots[i].in_use = FALSE; }
 
     rc = P1_SemCreate("Mutex", 1, &mutex); assert (rc == P1_SUCCESS);
     P3_vmStats.pages = pages;
@@ -126,7 +120,7 @@ P3SwapInit(int pages, int framesNum)
     P3_vmStats.blocks = numSlots;
     P3_vmStats.freeBlocks = numSlots;
     // initialize the swap data structures, e.g. the pool of free blocks
-    init = 1;
+    init = TRUE;
     return result;
 }
 /*
@@ -145,13 +139,12 @@ P3SwapInit(int pages, int framesNum)
 int
 P3SwapShutdown(void)
 {
-    int result = P1_SUCCESS;
-    if(init == 0){
-        return P3_NOT_INITIALIZED;
-    }
+    int rc, result = P1_SUCCESS;
+    if (init == FALSE) { return P3_NOT_INITIALIZED; }
     // clean things up
     free(frames);
     free(diskSlots);
+    rc = P1_SemFree(mutex); assert (rc == P1_SUCCESS);
 
     return result;
 }
@@ -175,6 +168,7 @@ P3SwapFreeAll(int pid)
 {
     int result = P1_SUCCESS;
     int rc;
+
     /*****************
 
     P(mutex)
@@ -182,6 +176,7 @@ P3SwapFreeAll(int pid)
     V(mutex)
 
     *****************/
+
     if(init == 0){
         return P3_NOT_INITIALIZED;
     }
@@ -196,8 +191,7 @@ P3SwapFreeAll(int pid)
             diskSlots[i].frame = -1;
         }
     }
-    rc = P1_V(mutex);
-    assert(rc == P1_SUCCESS);
+    rc = P1_V(mutex); assert(rc == P1_SUCCESS);
     return result;
 }
 
@@ -303,69 +297,66 @@ int
 P3SwapIn(int pid, int page, int frame)
 {
     int result = P1_SUCCESS;
-    int rc;
-    int found = 0;
+    int rc, index;
+    int found = FALSE;
     void *page_addy;
 
     //if you allocate a new one decrement vm stats free blocks
     //set slot frame  = frame
     rc = P1_P(mutex); assert (rc == P1_SUCCESS);
 //    if page is on swap disk
-    for(int i = 0; i < P3_vmStats.blocks; i++){
-        if(diskSlots[i].page == page && diskSlots[i].in_use ==  1){
-            // read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
-            found = 1;
-            rc = P3FrameMap(frame, &page_addy);
-            assert(rc == P1_SUCCESS);
-            int pageSize = USLOSS_MmuPageSize();
-            int sector; // # of bytes in a sector
-            int track; // # of sectors in a track
-            int disk; //# of tracks in the disk
-            rc = P2_DiskSize(P3_SWAP_DISK, &sector, &track, &disk);
-            assert(rc == P1_SUCCESS);
-            int offset = i * pageSize;
-            int sector_count = 0;
-            int track_count = 0;
-            while(offset > 0){
-                sector_count++;
-                if(sector_count == 16){
-                    track_count++;
-                    sector_count = 0;
-                }
-                offset = offset - sector;
-            }
-            rc = P2_DiskRead(P3_SWAP_DISK, track_count, sector_count, pageSize / sector, page_addy);
-            assert(rc == P1_SUCCESS);
-        }
-    }
-    //    else
-//        allocate space for the page on the swap disk
-//        if no more space
-//            result = P3_OUT_OF_SWAP
-    if(found == 0){
-        int free_found = 0;
-        for(int i = 0; i < P3_vmStats.blocks; i++){
-            if(diskSlots[i].in_use == 0){
-                diskSlots[i].in_use = 1;
-                diskSlots[i].page = page;
-                diskSlots[i].pid = pid;
-                diskSlots[i].frame = frame;
-                free_found = 1;
-                result = P3_EMPTY_PAGE;
-            }
+    for (index = 0; index < P3_vmStats.blocks; index++) {
+        if (diskSlots[index].page == page && diskSlots[index].in_use == TRUE) {
+            found = TRUE;
             break;
         }
-        if(free_found == 0){
-            result = P3_OUT_OF_SWAP;
-        }
     }
 
+    if (found) {
+        // read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
+        rc = P3FrameMap(frame, &page_addy); assert(rc == P1_SUCCESS);
+        int pageSize = USLOSS_MmuPageSize();
+        int sector; // # of bytes in a sector
+        int track; // # of sectors in a track
+        int disk; //# of tracks in the disk
+        rc = P2_DiskSize(P3_SWAP_DISK, &sector, &track, &disk); assert(rc == P1_SUCCESS);
 
+        int offset = index * pageSize;
+        int sector_count = 0;
+        int track_count = 0;
+        while(offset > 0){
+            sector_count++;
+            if(sector_count == 16){
+                track_count++;
+                sector_count = 0;
+            }
+            offset -= sector;
+        }
+        rc = P2_DiskRead(P3_SWAP_DISK, track_count, sector_count, pageSize / sector, page_addy); assert(rc == P1_SUCCESS);
 
-//        else
-//            result = P3_EMPTY_PAGE
-//    mark frame as not busy
-    frames[frame].busy = 0;
+    } else {
+        int slotFound = FALSE;
+
+        for (index = 0; index < P3_vmStats.blocks; index++) {
+            if (diskSlots[index].in_use == FALSE) {
+                slotFound = TRUE;
+
+                diskSlots[index].in_use = TRUE;
+                diskSlots[index].page = page;
+                diskSlots[index].pid = pid;
+                diskSlots[index].frame = frame;
+
+                P3_vmStats.blocks++;
+                P3_vmStats.freeBlocks--;
+
+                break;
+            }
+        }
+
+        result = slotFound? P3_EMPTY_PAGE: P3_OUT_OF_SWAP;
+    }
+
+    frames[frame].busy = FALSE;
     rc = P1_V(mutex); assert (rc == P1_SUCCESS);
 
     /*****************
