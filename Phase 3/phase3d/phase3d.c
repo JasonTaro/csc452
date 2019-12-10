@@ -78,6 +78,7 @@ static void debug3(char *fmt, ...)
 }
 
 int bytesInSector, sectorsInTrack, tracksInDisk, numSlots, pageSize, sectorsInPage;
+USLOSS_PTE* pageTable;
 
 /*
  *----------------------------------------------------------------------
@@ -115,6 +116,8 @@ P3SwapInit(int pages, int framesNum)
 
     rc = P1_SemCreate("Mutex", 1, &mutex); assert (rc == P1_SUCCESS);
 
+    pageTable = malloc(sizeof(USLOSS_PTE) * P1_MAXPROC);
+
     P3_vmStats.pages = pages;
     P3_vmStats.frames = framesNum;
     P3_vmStats.freeFrames = framesNum;
@@ -145,6 +148,7 @@ P3SwapShutdown(void)
     // clean things up
     free(frames);
     free(diskSlots);
+    free(pageTable);
     rc = P1_SemFree(mutex); assert (rc == P1_SUCCESS);
 
     return result;
@@ -178,16 +182,27 @@ P3SwapFreeAll(int pid)
 
     *****************/
 
+
     if(init == FALSE){ return P3_NOT_INITIALIZED; }
 
     rc = P1_P(mutex); assert(rc == P1_SUCCESS);
 
+    USLOSS_PTE* pte;
+    rc = P3PageTableGet(pid, &pte); assert(rc == P1_SUCCESS);
+
+    for (int j = 0; j < P3_vmStats.pages; j++) {
+        USLOSS_Console("Page: %d, Frame: %d, Incore: %d\n", j, pte[j].frame, pte[j].incore);
+
+    }
+
+
     for(int i = 0; i < numSlots; i++){
+//        USLOSS_Console("Slot: %d, in_use: %d, Page: %d, PID: %d, Frame: %d\n", i, diskSlots[i].in_use, diskSlots[i].page, diskSlots[i].pid, diskSlots[i].frame);
         if(diskSlots[i].pid == pid){
             diskSlots[i].in_use = FALSE;
-            diskSlots[i].page = -1;
-            diskSlots[i].pid = -1;
-            diskSlots[i].frame = -1;
+//            diskSlots[i].page = -1;
+//            diskSlots[i].pid = -1;
+//            diskSlots[i].frame = -1;
 
             P3_vmStats.freeBlocks++;
         }
@@ -227,7 +242,7 @@ P3SwapOut(int *frame)
                 target = hand;
                 break;
             } else {
-                rc = USLOSS_MmuSetAccess(hand, 0); assert (rc == USLOSS_MMU_OK);
+                rc = USLOSS_MmuSetAccess(hand, (access & (~USLOSS_MMU_REF))); assert (rc == USLOSS_MMU_OK);
             }
         }
     }
@@ -242,8 +257,7 @@ P3SwapOut(int *frame)
             if (diskSlots[index].frame == target) { break; }
         }
 
-        if (index == numSlots) { USLOSS_Console("big problemo\n");
-        }
+        if (index == numSlots) { USLOSS_Console("big problemo\n"); }
 
         int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
         int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
@@ -253,15 +267,37 @@ P3SwapOut(int *frame)
         memcpy(pageBuffer, address, pageSize);
 
         rc = P2_DiskWrite(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, pageBuffer); assert(rc == P1_SUCCESS);
+
         free(pageBuffer);
 
         rc = P3FrameUnmap(target); assert (rc == P1_SUCCESS);
 
-        rc = USLOSS_MmuSetAccess(target, 0); assert (rc == USLOSS_MMU_OK);
+        rc = USLOSS_MmuSetAccess(target, (access & (~USLOSS_MMU_DIRTY))); assert (rc == USLOSS_MMU_OK);
     }
+
+
+    USLOSS_PTE* pte;
+
+    for (index = 0; index < numSlots; index++) {
+        if (diskSlots[index].frame == target) {
+            int pid = diskSlots[index].pid;
+            rc = P3PageTableGet(pid, &pte); assert(rc == P1_SUCCESS);
+
+            for (int index2 = 0; index2 < P3_vmStats.pages; index2++) {
+                if (pte[index2].frame == target) {
+                    pte[index2].incore = FALSE;
+
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
     frames[target].busy = TRUE;
-    rc = P1_V(mutex); assert (rc == P1_SUCCESS);
     *frame = target;
+    rc = P1_V(mutex); assert (rc == P1_SUCCESS);
+
 
     /*****************
 
@@ -333,17 +369,6 @@ P3SwapIn(int pid, int page, int frame)
         // read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
         rc = P3FrameMap(frame, &address); assert(rc == P1_SUCCESS);
 
-        //        int sector_count = 0;
-//        int track_count = 0;
-//        while(offset > 0){
-//            sector_count++;
-//            if(sector_count == 16){
-//                track_count++;
-//                sector_count = 0;
-//            }
-//            offset -= bytesInSector;
-//        }
-
         int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
         int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
 
@@ -352,7 +377,6 @@ P3SwapIn(int pid, int page, int frame)
         rc = P2_DiskRead(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, pageBuffer); assert(rc == P1_SUCCESS);
 
         memcpy(address, pageBuffer, pageSize);
-
 
         rc = P3FrameUnmap(frame); assert (rc == P1_SUCCESS);
 

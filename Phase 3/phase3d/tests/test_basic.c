@@ -33,9 +33,10 @@
 #define FRAMES ((PAGES) - 1)
 #define ITERATIONS 10
 #define PAGERS 2        // # of pagers
+#define DEBUG
 
 static char *vmRegion;
-static char *names[] = {"A","B"};   // names of children, add more names to create more children
+static char *names[] = {"A"};   // names of children, add more names to create more children
 static int  numChildren = sizeof(names) / sizeof(char *);
 static int  pageSize;
 
@@ -127,6 +128,7 @@ P4_Startup(void *arg)
         assert(rc == P1_SUCCESS);
         TEST(status, 0);
     }
+
     Debug("Children terminated\n");
     Sys_VmShutdown();
     PASSED();
