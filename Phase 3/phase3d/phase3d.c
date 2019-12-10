@@ -178,14 +178,13 @@ P3SwapFreeAll(int pid)
 
     *****************/
 
-    if(init == 0){
-        return P3_NOT_INITIALIZED;
-    }
+    if(init == FALSE){ return P3_NOT_INITIALIZED; }
 
     rc = P1_P(mutex); assert(rc == P1_SUCCESS);
-    for(int i = 0; i < P3_vmStats.blocks; i++){
+
+    for(int i = 0; i < numSlots; i++){
         if(diskSlots[i].pid == pid){
-            diskSlots[i].in_use = 0;
+            diskSlots[i].in_use = FALSE;
             diskSlots[i].page = -1;
             diskSlots[i].pid = -1;
             diskSlots[i].frame = -1;
@@ -221,11 +220,10 @@ P3SwapOut(int *frame)
     static int hand = -1;
     rc = P1_P(mutex); assert (rc == P1_SUCCESS);
     while(TRUE) {
-        USLOSS_Console("here\n");
         hand = (hand + 1) % P3_vmStats.frames;
         if (frames[hand].busy == FALSE) {
             rc = USLOSS_MmuGetAccess(hand, &access); assert (rc == USLOSS_MMU_OK);
-            if (access != USLOSS_MMU_REF) {
+            if ((access & USLOSS_MMU_REF) != USLOSS_MMU_REF) {
                 target = hand;
                 break;
             } else {
@@ -235,19 +233,27 @@ P3SwapOut(int *frame)
     }
 
     rc = USLOSS_MmuGetAccess(target, &access); assert (rc == USLOSS_MMU_OK);
-    if (access == USLOSS_MMU_DIRTY) {
+    if ((access & USLOSS_MMU_DIRTY) == USLOSS_MMU_DIRTY) {
 //        write page to its location on the swap disk (P3FrameMap,P2_DiskWrite,P3FrameUnmap)
         void* address;
         rc = P3FrameMap(target, &address); assert (rc == P1_SUCCESS);
 
-        for (index = 0; index < P3_vmStats.blocks; index++) {
+        for (index = 0; index < numSlots; index++) {
             if (diskSlots[index].frame == target) { break; }
+        }
+
+        if (index == numSlots) { USLOSS_Console("big problemo\n");
         }
 
         int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
         int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
 
-        rc = P2_DiskWrite(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, address); assert(rc == P1_SUCCESS);
+        void* pageBuffer = malloc(pageSize);
+
+        memcpy(pageBuffer, address, pageSize);
+
+        rc = P2_DiskWrite(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, pageBuffer); assert(rc == P1_SUCCESS);
+        free(pageBuffer);
 
         rc = P3FrameUnmap(target); assert (rc == P1_SUCCESS);
 
@@ -310,13 +316,13 @@ P3SwapIn(int pid, int page, int frame)
     int result = P1_SUCCESS;
     int rc, index;
     int found = FALSE;
-    void *page_addy;
+    void* address;
 
     //if you allocate a new one decrement vm stats free blocks
     //set slot frame  = frame
     rc = P1_P(mutex); assert (rc == P1_SUCCESS);
 //    if page is on swap disk
-    for (index = 0; index < P3_vmStats.blocks; index++) {
+    for (index = 0; index < numSlots; index++) {
         if (diskSlots[index].page == page && diskSlots[index].in_use == TRUE) {
             found = TRUE;
             break;
@@ -325,7 +331,7 @@ P3SwapIn(int pid, int page, int frame)
 
     if (found) {
         // read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
-        rc = P3FrameMap(frame, &page_addy); assert(rc == P1_SUCCESS);
+        rc = P3FrameMap(frame, &address); assert(rc == P1_SUCCESS);
 
         //        int sector_count = 0;
 //        int track_count = 0;
@@ -341,14 +347,19 @@ P3SwapIn(int pid, int page, int frame)
         int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
         int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
 
-        rc = P2_DiskRead(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, page_addy); assert(rc == P1_SUCCESS);
+        void* pageBuffer = malloc(pageSize);
+
+        rc = P2_DiskRead(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, pageBuffer); assert(rc == P1_SUCCESS);
+
+        memcpy(address, pageBuffer, pageSize);
+
 
         rc = P3FrameUnmap(frame); assert (rc == P1_SUCCESS);
 
     } else {
         int slotFound = FALSE;
 
-        for (index = 0; index < P3_vmStats.blocks; index++) {
+        for (index = 0; index < numSlots; index++) {
             if (diskSlots[index].in_use == FALSE) {
                 slotFound = TRUE;
 
