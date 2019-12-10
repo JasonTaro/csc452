@@ -77,6 +77,8 @@ static void debug3(char *fmt, ...)
     }
 }
 
+int bytesInSector, sectorsInTrack, tracksInDisk, numSlots, pageSize, sectorsInPage;
+
 /*
  *----------------------------------------------------------------------
  *
@@ -96,16 +98,14 @@ P3SwapInit(int pages, int framesNum)
     if (init == TRUE) { return P3_ALREADY_INITIALIZED; }
     int result = P1_SUCCESS;
     int i, rc;
-    int sector; // # of bytes in a sector
-    int track; // # of sectors in a track
-    int disk; //# of tracks in the disk
-    int numSlots; //# of slots in swap disk
-    int pageSize;
-    rc = P2_DiskSize(P3_SWAP_DISK, &sector, &track, &disk);
-    assert(rc == P1_SUCCESS);
+
+    rc = P2_DiskSize(P3_SWAP_DISK, &bytesInSector, &sectorsInTrack, &tracksInDisk); assert(rc == P1_SUCCESS);
 
     pageSize = USLOSS_MmuPageSize();
-    numSlots = (track / (pageSize / sector)) * disk;
+
+    numSlots = (sectorsInTrack / (pageSize / bytesInSector)) * tracksInDisk;
+
+    sectorsInPage = pageSize / bytesInSector;
 
     frames = malloc(sizeof(frameInfo) * framesNum);
     for (i = 0; i < framesNum; i++) { frames[i].busy = FALSE; }
@@ -114,12 +114,13 @@ P3SwapInit(int pages, int framesNum)
     for (i = 0; i < numSlots; i++){ diskSlots[i].in_use = FALSE; }
 
     rc = P1_SemCreate("Mutex", 1, &mutex); assert (rc == P1_SUCCESS);
+
     P3_vmStats.pages = pages;
     P3_vmStats.frames = framesNum;
     P3_vmStats.freeFrames = framesNum;
     P3_vmStats.blocks = numSlots;
     P3_vmStats.freeBlocks = numSlots;
-    // initialize the swap data structures, e.g. the pool of free blocks
+
     init = TRUE;
     return result;
 }
@@ -181,14 +182,15 @@ P3SwapFreeAll(int pid)
         return P3_NOT_INITIALIZED;
     }
 
-    rc = P1_P(mutex);
-    assert(rc == P1_SUCCESS);
+    rc = P1_P(mutex); assert(rc == P1_SUCCESS);
     for(int i = 0; i < P3_vmStats.blocks; i++){
         if(diskSlots[i].pid == pid){
             diskSlots[i].in_use = 0;
             diskSlots[i].page = -1;
             diskSlots[i].pid = -1;
             diskSlots[i].frame = -1;
+
+            P3_vmStats.freeBlocks++;
         }
     }
     rc = P1_V(mutex); assert(rc == P1_SUCCESS);
@@ -214,15 +216,16 @@ int
 P3SwapOut(int *frame) 
 {
     int result = P1_SUCCESS;
-    int target, rc, access;
+    int target, rc, access, index;
 
     static int hand = -1;
     rc = P1_P(mutex); assert (rc == P1_SUCCESS);
     while(TRUE) {
+        USLOSS_Console("here\n");
         hand = (hand + 1) % P3_vmStats.frames;
         if (frames[hand].busy == FALSE) {
             rc = USLOSS_MmuGetAccess(hand, &access); assert (rc == USLOSS_MMU_OK);
-            if (access == USLOSS_MMU_REF) {
+            if (access != USLOSS_MMU_REF) {
                 target = hand;
                 break;
             } else {
@@ -236,12 +239,20 @@ P3SwapOut(int *frame)
 //        write page to its location on the swap disk (P3FrameMap,P2_DiskWrite,P3FrameUnmap)
         void* address;
         rc = P3FrameMap(target, &address); assert (rc == P1_SUCCESS);
-//        P2_DiskWrite(P3_SWAP_DISK )
 
+        for (index = 0; index < P3_vmStats.blocks; index++) {
+            if (diskSlots[index].frame == target) { break; }
+        }
+
+        int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
+        int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
+
+        rc = P2_DiskWrite(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, address); assert(rc == P1_SUCCESS);
+
+        rc = P3FrameUnmap(target); assert (rc == P1_SUCCESS);
 
         rc = USLOSS_MmuSetAccess(target, 0); assert (rc == USLOSS_MMU_OK);
     }
-    rc = P3FrameUnmap(target); assert (rc == P1_SUCCESS);
     frames[target].busy = TRUE;
     rc = P1_V(mutex); assert (rc == P1_SUCCESS);
     *frame = target;
@@ -315,26 +326,25 @@ P3SwapIn(int pid, int page, int frame)
     if (found) {
         // read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
         rc = P3FrameMap(frame, &page_addy); assert(rc == P1_SUCCESS);
-        int pageSize = USLOSS_MmuPageSize();
-        int sector; // # of bytes in a sector
-        int track; // # of sectors in a track
-        int disk; //# of tracks in the disk
-        rc = P2_DiskSize(P3_SWAP_DISK, &sector, &track, &disk); assert(rc == P1_SUCCESS);
 
-        int offset = index * pageSize;
-        int sector_count = 0;
-        int track_count = 0;
-        while(offset > 0){
-            sector_count++;
-            if(sector_count == 16){
-                track_count++;
-                sector_count = 0;
-            }
-            offset -= sector;
-        }
-        rc = P2_DiskRead(P3_SWAP_DISK, track_count, sector_count, pageSize / sector, page_addy); assert(rc == P1_SUCCESS);
+        //        int sector_count = 0;
+//        int track_count = 0;
+//        while(offset > 0){
+//            sector_count++;
+//            if(sector_count == 16){
+//                track_count++;
+//                sector_count = 0;
+//            }
+//            offset -= bytesInSector;
+//        }
+
+        int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
+        int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
+
+        rc = P2_DiskRead(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, page_addy); assert(rc == P1_SUCCESS);
 
         rc = P3FrameUnmap(frame); assert (rc == P1_SUCCESS);
+
     } else {
         int slotFound = FALSE;
 
@@ -347,7 +357,6 @@ P3SwapIn(int pid, int page, int frame)
                 diskSlots[index].pid = pid;
                 diskSlots[index].frame = frame;
 
-                P3_vmStats.blocks++;
                 P3_vmStats.freeBlocks--;
 
                 break;
