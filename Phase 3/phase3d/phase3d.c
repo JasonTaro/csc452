@@ -97,6 +97,11 @@ int bytesInSector, sectorsInTrack, tracksInDisk, numSlots, pageSize, sectorsInPa
 int
 P3SwapInit(int pages, int framesNum)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3SwapInit from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     if (init == TRUE) { return P3_ALREADY_INITIALIZED; }
     int result = P1_SUCCESS;
     int i, rc;
@@ -147,9 +152,13 @@ P3SwapInit(int pages, int framesNum)
 int
 P3SwapShutdown(void)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3SwapShutdown from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int rc, result = P1_SUCCESS;
     if (init == FALSE) { return P3_NOT_INITIALIZED; }
-    // clean things up
     free(frames);
     free(diskSlots);
     rc = P1_SemFree(mutex); assert (rc == P1_SUCCESS);
@@ -174,6 +183,11 @@ P3SwapShutdown(void)
 int
 P3SwapFreeAll(int pid)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3SwapFreeAll from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int result = P1_SUCCESS;
     int rc;
 
@@ -193,10 +207,6 @@ P3SwapFreeAll(int pid)
     if(init == FALSE){ return P3_NOT_INITIALIZED; }
 
     rc = P1_P(mutex); assert(rc == P1_SUCCESS);
-
-    USLOSS_PTE* pte;
-    rc = P3PageTableGet(pid, &pte); assert(rc == P1_SUCCESS);
-
     for(int i = 0; i < numSlots; i++){
         if(diskSlots[i].pid == pid && diskSlots[i].in_use == TRUE){
             diskSlots[i].in_use = FALSE;
@@ -229,6 +239,11 @@ P3SwapFreeAll(int pid)
 int
 P3SwapOut(int *frame) 
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3SwapOut from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int result = P1_SUCCESS;
     int target, rc, access, index;
 
@@ -345,6 +360,11 @@ P3SwapOut(int *frame)
 int
 P3SwapIn(int pid, int page, int frame)
 {
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) != USLOSS_PSR_CURRENT_MODE) {
+        USLOSS_Console("ERROR: Call to P3SwapIn from user mode.\n");
+        USLOSS_IllegalInstruction();
+    }
+
     int result = P1_SUCCESS;
     int rc, index;
     int found = FALSE;
