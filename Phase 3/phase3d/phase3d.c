@@ -185,6 +185,10 @@ P3SwapFreeAll(int pid)
 
     *****************/
 
+//    for (int i = 0; i < numSlots; i++) {
+//        USLOSS_Console("Slot: %d, in_use: %d, PID: %d, Page: %d, Frame: %d\n", i, diskSlots[i].in_use, diskSlots[i].pid, diskSlots[i].page, diskSlots[i].frame);
+//    }
+//    USLOSS_Console("\n");
 
     if(init == FALSE){ return P3_NOT_INITIALIZED; }
 
@@ -270,7 +274,6 @@ P3SwapOut(int *frame)
 
 
     USLOSS_PTE* pte;
-    int updatedTable = FALSE;
 
     for (index = 0; index < numSlots; index++) {
         if (diskSlots[index].frame == target && diskSlots[index].in_use == TRUE) {
@@ -279,13 +282,10 @@ P3SwapOut(int *frame)
 
             for (int page = 0; page < P3_vmStats.pages; page++) {
                 if (pte[page].frame == target) {
-                    updatedTable = TRUE;
                     pte[page].incore = FALSE;
                     pte[page].frame = -1;
-                    break;
                 }
             }
-            if (updatedTable) { break; }
         }
     }
 
