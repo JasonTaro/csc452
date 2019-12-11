@@ -60,6 +60,8 @@ struct slot {
 }typedef slot;
 
 struct frameInfo {
+    int pid;
+    int page;
     int busy;
 } typedef frameInfo;
 
@@ -78,7 +80,6 @@ static void debug3(char *fmt, ...)
 }
 
 int bytesInSector, sectorsInTrack, tracksInDisk, numSlots, pageSize, sectorsInPage;
-USLOSS_PTE* pageTable;
 
 /*
  *----------------------------------------------------------------------
@@ -108,8 +109,6 @@ P3SwapInit(int pages, int framesNum)
 
     numSlots = (sectorsInTrack / sectorsInPage) * tracksInDisk;
 
-    USLOSS_Console("%d\n", numSlots);
-
     frames = malloc(sizeof(frameInfo) * framesNum);
     for (i = 0; i < framesNum; i++) { frames[i].busy = FALSE; }
 
@@ -121,10 +120,7 @@ P3SwapInit(int pages, int framesNum)
         diskSlots[i].frame = -1;
     }
 
-
     rc = P1_SemCreate("Mutex", 1, &mutex); assert (rc == P1_SUCCESS);
-
-    pageTable = malloc(sizeof(USLOSS_PTE) * P1_MAXPROC);
 
     P3_vmStats.pages = pages;
     P3_vmStats.frames = framesNum;
@@ -156,7 +152,6 @@ P3SwapShutdown(void)
     // clean things up
     free(frames);
     free(diskSlots);
-    free(pageTable);
     rc = P1_SemFree(mutex); assert (rc == P1_SUCCESS);
 
     return result;
@@ -198,15 +193,8 @@ P3SwapFreeAll(int pid)
     USLOSS_PTE* pte;
     rc = P3PageTableGet(pid, &pte); assert(rc == P1_SUCCESS);
 
-    for (int j = 0; j < P3_vmStats.pages; j++) {
-        USLOSS_Console("Page: %d, Frame: %d, Incore: %d\n", j, pte[j].frame, pte[j].incore);
-
-    }
-
-
     for(int i = 0; i < numSlots; i++){
-        USLOSS_Console("Slot: %d, in_use: %d, Page: %d, PID: %d, Frame: %d\n", i, diskSlots[i].in_use, diskSlots[i].page, diskSlots[i].pid, diskSlots[i].frame);
-        if(diskSlots[i].pid == pid){
+        if(diskSlots[i].pid == pid && diskSlots[i].in_use == TRUE){
             diskSlots[i].in_use = FALSE;
             diskSlots[i].page = -1;
             diskSlots[i].pid = -1;
@@ -255,17 +243,14 @@ P3SwapOut(int *frame)
         }
     }
 
-//    rc = USLOSS_MmuGetAccess(target, &access); assert (rc == USLOSS_MMU_OK);
+    rc = USLOSS_MmuGetAccess(target, &access); assert (rc == USLOSS_MMU_OK);
     if ((access & USLOSS_MMU_DIRTY) == USLOSS_MMU_DIRTY) {
-//        write page to its location on the swap disk (P3FrameMap,P2_DiskWrite,P3FrameUnmap)
         void* address;
         rc = P3FrameMap(target, &address); assert (rc == P1_SUCCESS);
 
         for (index = 0; index < numSlots; index++) {
-            if (diskSlots[index].frame == target) { break; }
+            if (diskSlots[index].pid == frames[target].pid && diskSlots[index].page == frames[target].page) { break; }
         }
-
-        if (index == numSlots) { USLOSS_Console("big problemo\n"); }
 
         int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
         int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
@@ -275,8 +260,7 @@ P3SwapOut(int *frame)
         memcpy(pageBuffer, address, pageSize);
 
         rc = P2_DiskWrite(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, pageBuffer); assert(rc == P1_SUCCESS);
-        // printf("process %d writing into slot %d from frame %d\n", diskSlots[index].pid, index, target);
-        printf("Writing %s \n to sector %d in track %d in slot %d\n\n", (char *)pageBuffer, currentSector, currentTrack, index);
+
         free(pageBuffer);
 
         rc = P3FrameUnmap(target); assert (rc == P1_SUCCESS);
@@ -286,25 +270,28 @@ P3SwapOut(int *frame)
 
 
     USLOSS_PTE* pte;
+    int updatedTable = FALSE;
 
     for (index = 0; index < numSlots; index++) {
         if (diskSlots[index].frame == target && diskSlots[index].in_use == TRUE) {
             int pid = diskSlots[index].pid;
             rc = P3PageTableGet(pid, &pte); assert(rc == P1_SUCCESS);
 
-            for (int index2 = 0; index2 < P3_vmStats.pages; index2++) {
-                if (pte[index2].frame == target) {
-                    pte[index2].incore = FALSE;
-
+            for (int page = 0; page < P3_vmStats.pages; page++) {
+                if (pte[page].frame == target) {
+                    updatedTable = TRUE;
+                    pte[page].incore = FALSE;
+                    pte[page].frame = -1;
                     break;
                 }
             }
-            break;
+            if (updatedTable) { break; }
         }
     }
 
     frames[target].busy = TRUE;
     *frame = target;
+    P3_vmStats.pageOuts++;
     rc = P1_V(mutex); assert (rc == P1_SUCCESS);
 
 
@@ -363,12 +350,11 @@ P3SwapIn(int pid, int page, int frame)
     int found = FALSE;
     void* address;
 
-    USLOSS_Console("PID: %d, page: %d, frame: %d\n", pid, page, frame);
+    frames[frame].pid = pid;
+    frames[frame].page = page;
 
-
-    //set slot frame  = frame
     rc = P1_P(mutex); assert (rc == P1_SUCCESS);
-//    if page is on swap disk
+
     for (index = 0; index < numSlots; index++) {
         if (diskSlots[index].pid == pid && diskSlots[index].page == page && diskSlots[index].in_use == TRUE) {
             found = TRUE;
@@ -377,9 +363,7 @@ P3SwapIn(int pid, int page, int frame)
     }
 
     if (found) {
-        // read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
         rc = P3FrameMap(frame, &address); assert(rc == P1_SUCCESS);
-        printf("her2\n");
         int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
         int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
 
@@ -388,22 +372,19 @@ P3SwapIn(int pid, int page, int frame)
         rc = P2_DiskRead(P3_SWAP_DISK, currentTrack, currentSector, sectorsInPage, pageBuffer); assert(rc == P1_SUCCESS);
 
         memcpy(address, pageBuffer, pageSize);
-       // printf("process %d reading from slot %d into frame %d\n", diskSlots[index].pid, index, frame);
-        printf("Reading %s\n from sector %d in track %d in slot %d\n\n", (char *)pageBuffer, currentSector, currentTrack, index);
+
         free(pageBuffer);
+
         diskSlots[index].frame = frame;
+
         rc = P3FrameUnmap(frame); assert (rc == P1_SUCCESS);
-//            for(int i = 0; i < numSlots; i++){
-//                if(diskSlots[i].pid == pid && diskSlots[i].frame == frame && diskSlots[i].page != page){
-//                    diskSlots[i].frame = -1;
-//                }
-//            }
+
+        P3_vmStats.replaced++;
     } else {
         int slotFound = FALSE;
 
         for (index = 0; index < numSlots; index++) {
             if (diskSlots[index].in_use == FALSE) {
-                printf("here");
                 slotFound = TRUE;
 
                 diskSlots[index].in_use = TRUE;
@@ -421,6 +402,7 @@ P3SwapIn(int pid, int page, int frame)
     }
 
     frames[frame].busy = FALSE;
+    P3_vmStats.pageIns++;
     rc = P1_V(mutex); assert (rc == P1_SUCCESS);
 
     /*****************
