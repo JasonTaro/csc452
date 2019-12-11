@@ -370,7 +370,7 @@ P3SwapIn(int pid, int page, int frame)
     rc = P1_P(mutex); assert (rc == P1_SUCCESS);
 //    if page is on swap disk
     for (index = 0; index < numSlots; index++) {
-        if (diskSlots[index].pid == pid && diskSlots[index].page == page && diskSlots[index].frame == frame && diskSlots[index].in_use == TRUE) {
+        if (diskSlots[index].pid == pid && diskSlots[index].page == page && diskSlots[index].in_use == TRUE) {
             found = TRUE;
             break;
         }
@@ -379,7 +379,7 @@ P3SwapIn(int pid, int page, int frame)
     if (found) {
         // read page from swap disk into frame (P3FrameMap,P2_DiskRead,P3FrameUnmap)
         rc = P3FrameMap(frame, &address); assert(rc == P1_SUCCESS);
-
+        printf("her2\n");
         int currentTrack = ((index * pageSize) / bytesInSector) / sectorsInTrack;
         int currentSector = ((index * pageSize) / bytesInSector) % sectorsInTrack;
 
@@ -391,6 +391,7 @@ P3SwapIn(int pid, int page, int frame)
        // printf("process %d reading from slot %d into frame %d\n", diskSlots[index].pid, index, frame);
         printf("Reading %s\n from sector %d in track %d in slot %d\n\n", (char *)pageBuffer, currentSector, currentTrack, index);
         free(pageBuffer);
+        diskSlots[index].frame = frame;
         rc = P3FrameUnmap(frame); assert (rc == P1_SUCCESS);
 //            for(int i = 0; i < numSlots; i++){
 //                if(diskSlots[i].pid == pid && diskSlots[i].frame == frame && diskSlots[i].page != page){
@@ -402,6 +403,7 @@ P3SwapIn(int pid, int page, int frame)
 
         for (index = 0; index < numSlots; index++) {
             if (diskSlots[index].in_use == FALSE) {
+                printf("here");
                 slotFound = TRUE;
 
                 diskSlots[index].in_use = TRUE;
